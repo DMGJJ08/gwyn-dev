@@ -217,6 +217,33 @@
     const chkLayer2 = document.getElementById('chk-layer2');
     const chkLayer3 = document.getElementById('chk-layer3');
 
+    // Load actual background assets
+    const bgImages = {
+      1: new Image(),
+      2: new Image(),
+      3: new Image()
+    };
+    bgImages[1].src = 'assets/farm_background.png';
+    bgImages[2].src = 'assets/underwater_background.png';
+    bgImages[3].src = 'assets/desert_background.png';
+    const bgLoaded = { 1: false, 2: false, 3: false };
+    for (let key in bgImages) {
+      bgImages[key].onload = () => { bgLoaded[key] = true; };
+    }
+
+    // Mirroring drawing helper
+    function drawBgTile(img, x, y, w, h, isFlipped) {
+      ctx.save();
+      if (isFlipped) {
+        ctx.translate(x + w, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, 0, y, w, h);
+      } else {
+        ctx.drawImage(img, x, y, w, h);
+      }
+      ctx.restore();
+    }
+
     // Simulation Config
     let activeStage = 1;
     let scrollSpeed = 150;
@@ -258,34 +285,48 @@
 
       // Layer 1: Sky & Sunset Clouds
       if (chkLayer1.checked) {
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        skyGrad.addColorStop(0, '#1a0933'); // Dark purple
-        skyGrad.addColorStop(0.5, '#4a123c'); // Burgundy
-        skyGrad.addColorStop(0.8, '#852b1b'); // Burnt orange
-        skyGrad.addColorStop(1, '#c25a1f'); // Warm sunset yellow
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (bgLoaded[1]) {
+          const img = bgImages[1];
+          const imgScrollX = (scrollX * 0.15) % canvas.width;
+          const startTileIndex = Math.floor(imgScrollX / canvas.width);
+          
+          const x1 = startTileIndex * canvas.width - imgScrollX;
+          const isFlipped1 = (startTileIndex % 2 !== 0);
+          drawBgTile(img, x1, 0, canvas.width, canvas.height, isFlipped1);
+          
+          const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
+          const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+          drawBgTile(img, x2, 0, canvas.width, canvas.height, isFlipped2);
+        } else {
+          const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          skyGrad.addColorStop(0, '#1a0933'); // Dark purple
+          skyGrad.addColorStop(0.5, '#4a123c'); // Burgundy
+          skyGrad.addColorStop(0.8, '#852b1b'); // Burnt orange
+          skyGrad.addColorStop(1, '#c25a1f'); // Warm sunset yellow
+          ctx.fillStyle = skyGrad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw sun setting
-        ctx.fillStyle = '#ff7f36';
-        ctx.shadowBlur = 40;
-        ctx.shadowColor = '#ff5100';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, groundY - 10, 45, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0; // Reset shadow
-
-        // Render cloud layers (10% speed relative movement)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-        clouds.forEach(c => {
-          c.x = (c.x - c.speed * dt - (scrollSpeed * 0.05 * dt)) % (canvas.width + 100);
-          if (c.x < -100) c.x = canvas.width + 100;
+          // Draw sun setting
+          ctx.fillStyle = '#ff7f36';
+          ctx.shadowBlur = 40;
+          ctx.shadowColor = '#ff5100';
           ctx.beginPath();
-          ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-          ctx.arc(c.x + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
-          ctx.arc(c.x - c.size * 0.6, c.y - c.size * 0.1, c.size * 0.7, 0, Math.PI * 2);
+          ctx.arc(canvas.width / 2, groundY - 10, 45, 0, Math.PI * 2);
           ctx.fill();
-        });
+          ctx.shadowBlur = 0; // Reset shadow
+
+          // Render cloud layers (10% speed relative movement)
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+          clouds.forEach(c => {
+            c.x = (c.x - c.speed * dt - (scrollSpeed * 0.05 * dt)) % (canvas.width + 100);
+            if (c.x < -100) c.x = canvas.width + 100;
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+            ctx.arc(c.x + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
+            ctx.arc(c.x - c.size * 0.6, c.y - c.size * 0.1, c.size * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
       }
 
       // Layer 2: Parallax Rolling Hills (45% Speed)
@@ -349,24 +390,38 @@
 
       // Layer 1: Ambient Rays & Ocean Gradient (15% Speed)
       if (chkLayer1.checked) {
-        const waterGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        waterGrad.addColorStop(0, '#020b17'); // Pitch dark blue
-        waterGrad.addColorStop(0.5, '#071d3a'); // Dark sea blue
-        waterGrad.addColorStop(1, '#0c2e59'); // Soft deep teal base
-        ctx.fillStyle = waterGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // God rays rotating slowly
-        ctx.fillStyle = 'rgba(12, 146, 204, 0.025)';
         const time = performance.now() * 0.0005;
-        for (let i = 0; i < 4; i++) {
-          const angle = (i * Math.PI / 4) + Math.sin(time) * 0.05;
-          ctx.beginPath();
-          ctx.moveTo(canvas.width / 2, -20);
-          ctx.lineTo(canvas.width / 2 + Math.cos(angle - 0.2) * 500, canvas.height + 50);
-          ctx.lineTo(canvas.width / 2 + Math.cos(angle + 0.2) * 500, canvas.height + 50);
-          ctx.closePath();
-          ctx.fill();
+        if (bgLoaded[2]) {
+          const img = bgImages[2];
+          const imgScrollX = (scrollX * 0.15) % canvas.width;
+          const startTileIndex = Math.floor(imgScrollX / canvas.width);
+          
+          const x1 = startTileIndex * canvas.width - imgScrollX;
+          const isFlipped1 = (startTileIndex % 2 !== 0);
+          drawBgTile(img, x1, 0, canvas.width, canvas.height, isFlipped1);
+          
+          const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
+          const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+          drawBgTile(img, x2, 0, canvas.width, canvas.height, isFlipped2);
+        } else {
+          const waterGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          waterGrad.addColorStop(0, '#020b17'); // Pitch dark blue
+          waterGrad.addColorStop(0.5, '#071d3a'); // Dark sea blue
+          waterGrad.addColorStop(1, '#0c2e59'); // Soft deep teal base
+          ctx.fillStyle = waterGrad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // God rays rotating slowly
+          ctx.fillStyle = 'rgba(12, 146, 204, 0.025)';
+          for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI / 4) + Math.sin(time) * 0.05;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, -20);
+            ctx.lineTo(canvas.width / 2 + Math.cos(angle - 0.2) * 500, canvas.height + 50);
+            ctx.lineTo(canvas.width / 2 + Math.cos(angle + 0.2) * 500, canvas.height + 50);
+            ctx.closePath();
+            ctx.fill();
+          }
         }
 
         // Bubbles floating up
@@ -444,22 +499,36 @@
 
       // Layer 1: Scorching Sky & Giant Sun (10% Speed)
       if (chkLayer1.checked) {
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        skyGrad.addColorStop(0, '#2c042d'); // Sunset magenta-purple
-        skyGrad.addColorStop(0.4, '#4d0b28'); // Deep crimson
-        skyGrad.addColorStop(0.75, '#852113'); // Intense dark red
-        skyGrad.addColorStop(1, '#d47311'); // Hot desert sand orange
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (bgLoaded[3]) {
+          const img = bgImages[3];
+          const imgScrollX = (scrollX * 0.15) % canvas.width;
+          const startTileIndex = Math.floor(imgScrollX / canvas.width);
+          
+          const x1 = startTileIndex * canvas.width - imgScrollX;
+          const isFlipped1 = (startTileIndex % 2 !== 0);
+          drawBgTile(img, x1, 0, canvas.width, canvas.height, isFlipped1);
+          
+          const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
+          const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+          drawBgTile(img, x2, 0, canvas.width, canvas.height, isFlipped2);
+        } else {
+          const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          skyGrad.addColorStop(0, '#2c042d'); // Sunset magenta-purple
+          skyGrad.addColorStop(0.4, '#4d0b28'); // Deep crimson
+          skyGrad.addColorStop(0.75, '#852113'); // Intense dark red
+          skyGrad.addColorStop(1, '#d47311'); // Hot desert sand orange
+          ctx.fillStyle = skyGrad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Giant setting sun
-        ctx.fillStyle = '#f1c40f';
-        ctx.shadowBlur = 60;
-        ctx.shadowColor = '#d45500';
-        ctx.beginPath();
-        ctx.arc(canvas.width * 0.7, groundY - 5, 60, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0; // Reset
+          // Giant setting sun
+          ctx.fillStyle = '#f1c40f';
+          ctx.shadowBlur = 60;
+          ctx.shadowColor = '#d45500';
+          ctx.beginPath();
+          ctx.arc(canvas.width * 0.7, groundY - 5, 60, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0; // Reset
+        }
       }
 
       // Layer 2: Parallax Sand Dunes (45% Speed)

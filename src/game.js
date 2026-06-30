@@ -166,7 +166,7 @@ class GameEngine {
     this.height = height;
     this.canvas.height = height;
     const isTaskbar = height < 150;
-    groundY = isTaskbar ? (height - 24) : (height - 35);
+    groundY = isTaskbar ? (height - 20) : (height - 30);
   }
   
   initGame(playerClass, allocatedStats = null) {
@@ -703,10 +703,32 @@ class GameEngine {
     
     // --- LAYER 3: FOREGROUND PLATFORM & DETAILS (100% Speed) ---
     if (this.activeStage === 1) { // Farm grass/soil
-      this.ctx.fillStyle = '#0f140d';
-      this.ctx.fillRect(0, groundY, this.width, this.height - groundY);
-      this.ctx.fillStyle = '#223018';
-      this.ctx.fillRect(0, groundY, this.width, 4);
+      // Main golden pathway (from groundY to groundY + 16)
+      this.ctx.fillStyle = '#dcb93c'; // Warm golden yellow dirt path
+      this.ctx.fillRect(0, groundY, this.width, 16);
+      
+      // Highlights line at the top
+      this.ctx.fillStyle = '#eed058';
+      this.ctx.fillRect(0, groundY, this.width, 3);
+      
+      // Dark brown soil base at the very bottom (from groundY + 16 to height)
+      this.ctx.fillStyle = '#3a210f';
+      this.ctx.fillRect(0, groundY + 16, this.width, this.height - (groundY + 16));
+      
+      // Wavy organic transition between path and soil base
+      this.ctx.fillStyle = '#3a210f';
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, groundY + 16);
+      const waveOffset = (scrollX) % this.width;
+      for (let x = 0; x <= this.width; x += 10) {
+        const worldX = waveOffset + x;
+        const y = groundY + 15 + Math.sin(worldX * 0.05) * 1.8;
+        this.ctx.lineTo(x, y);
+      }
+      this.ctx.lineTo(this.width, this.height);
+      this.ctx.lineTo(0, this.height);
+      this.ctx.closePath();
+      this.ctx.fill();
       
       // Farm fences
       this.ctx.fillStyle = '#131210';

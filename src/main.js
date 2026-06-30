@@ -4,8 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new GameEngine();
   let selectedClass = 'Warrior'; // Default selection
   
-  // VIP Auto-Heal global configuration
+  // VIP Auto-Heal & Auto-Respawn global configuration
   window.autoHealActive = false;
+  window.autoRespawnActive = false;
   window.assignedHpItem = null;
   window.assignedMpItem = null;
   window.hpHealThreshold = 35;
@@ -104,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load VIP configuration
         if (data.vipConfig) {
           window.autoHealActive = data.vipConfig.autoHealActive || false;
+          window.autoRespawnActive = data.vipConfig.autoRespawnActive || false;
           window.assignedHpItem = data.vipConfig.assignedHpItem || null;
           window.assignedMpItem = data.vipConfig.assignedMpItem || null;
           window.hpHealThreshold = data.vipConfig.hpHealThreshold !== undefined ? data.vipConfig.hpHealThreshold : 35;
@@ -111,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Sync DOM checkbox and sliders
           document.getElementById('chk-auto-heal-active').checked = window.autoHealActive;
+          document.getElementById('chk-auto-respawn-active').checked = window.autoRespawnActive;
           document.getElementById('slider-hp-heal').value = window.hpHealThreshold;
           document.getElementById('lbl-hp-heal').textContent = `${window.hpHealThreshold}%`;
           document.getElementById('slider-mp-heal').value = window.mpHealThreshold;
@@ -153,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inventory: game.player.inventory,
         vipConfig: {
           autoHealActive: window.autoHealActive,
+          autoRespawnActive: window.autoRespawnActive,
           assignedHpItem: window.assignedHpItem,
           assignedMpItem: window.assignedMpItem,
           hpHealThreshold: window.hpHealThreshold,
@@ -318,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame((t) => game.gameLoop(t));
   });
 
-  const btnVipRevive = document.getElementById('btn-vip-revive');
+  const chkAutoRespawnActive = document.getElementById('chk-auto-respawn-active');
 
   // Respawn Binding - Punishes death by sending the player back to Level 1 of the previous cleared stage
   btnRespawn.addEventListener('click', () => {
@@ -339,23 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
   });
 
-  // VIP Revive Binding - Spends 1 VIP Coin to revive immediately on the spot
-  btnVipRevive.addEventListener('click', () => {
-    if (game.player && game.player.inventory && game.player.inventory.etc && game.player.inventory.etc.vip2coin > 0) {
-      game.player.inventory.etc.vip2coin--;
-      
-      gameoverOverlay.classList.remove('show');
-      game.player.resetHp();
-      game.player.mp = game.player.maxMp;
-      
-      // Resume loops immediately
-      game.isPlaying = true;
-      game.lastTime = performance.now();
-      requestAnimationFrame((t) => game.gameLoop(t));
-      
-      saveGameData();
-      updateUI();
-    }
+  // VIP Auto-Respawn Checkbox Change Handler
+  chkAutoRespawnActive.addEventListener('change', (e) => {
+    window.autoRespawnActive = e.target.checked;
+    saveGameData();
   });
 
   // Taskbar Mode Toggle Binding
@@ -828,6 +819,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Bind globals for cross-file notifications
   window.updateUI = updateUI;
+  let autoRespawnTimeout = null;
+  let autoRespawnInterval = null;
   window.showGameOver = () => {
     const respawnStage = Math.max(1, game.activeStage - 1);
     const stageNames = {
@@ -838,12 +831,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetName = stageNames[respawnStage] || `Stage ${respawnStage}`;
     btnRespawn.textContent = `Respawn at ${targetName}`;
     
-    // Toggle VIP Revive button display if player owns a VIP Coin
+    // Clear any previous auto-respawn timers
+    if (autoRespawnTimeout) clearTimeout(autoRespawnTimeout);
+    if (autoRespawnInterval) clearInterval(autoRespawnInterval);
+    
+    // Toggle VIP Auto-Respawn if checkbox is checked and player possesses a VIP Coin
     const hasVipCoin = game.player && game.player.inventory && game.player.inventory.etc && game.player.inventory.etc.vip2coin > 0;
-    if (hasVipCoin) {
-      btnVipRevive.style.display = 'block';
-    } else {
-      btnVipRevive.style.display = 'none';
+    if (window.autoRespawnActive && hasVipCoin) {
+      let secondsLeft = 2;
+      btnRespawn.textContent = `Auto-Respawning in ${secondsLeft}s...`;
+      
+      autoRespawnInterval = setInterval(() => {
+        secondsLeft--;
+        if (secondsLeft > 0) {
+          btnRespawn.textContent = `Auto-Respawning in ${secondsLeft}s...`;
+        } else {
+          clearInterval(autoRespawnInterval);
+        }
+      }, 1000);
+      
+      autoRespawnTimeout = setTimeout(() => {
+        btnRespawn.click();
+      }, 2000);
     }
     
     gameoverOverlay.classList.add('show');

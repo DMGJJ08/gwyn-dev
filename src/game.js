@@ -151,7 +151,7 @@ class GameEngine {
       3: new Image()
     };
     
-    this.bgImages[1].src = 'assets/farm_background.png';
+    this.bgImages[1].src = 'assets/farm_background_mid.png';
     this.bgImages[2].src = 'assets/underwater_background.png';
     this.bgImages[3].src = 'assets/desert_background.png';
     
@@ -529,50 +529,75 @@ class GameEngine {
     const scrollX = this.bgOffset;
     
     // --- LAYER 1: SKY & FAR BACKGROUND (15% Speed) ---
-    if (this.bgLoaded[this.activeStage]) {
-      const img = this.bgImages[this.activeStage];
-      const yPos = isTaskbar ? -50 : 0; // Adjust clipping for taskbar mode
-      const imgScrollX = (scrollX * 0.15) % this.width;
-      
-      const startTileIndex = Math.floor(imgScrollX / this.width);
-      
-      const x1 = startTileIndex * this.width - imgScrollX;
-      const isFlipped1 = (startTileIndex % 2 !== 0);
-      this.drawBgTile(img, x1, yPos, this.width, this.height, isFlipped1);
-      
-      const x2 = (startTileIndex + 1) * this.width - imgScrollX;
-      const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
-      this.drawBgTile(img, x2, yPos, this.width, this.height, isFlipped2);
-    } else {
-      // Fallback gradients if assets haven't loaded yet
+    if (this.activeStage === 1) {
+      // Stage 1 (Farm) always draws the sunset sky gradient and moving clouds in Layer 1
       const grad = this.ctx.createLinearGradient(0, 0, 0, this.height);
-      if (this.activeStage === 1) { // Sunset Farm gradient
-        grad.addColorStop(0, '#1a0933');
-        grad.addColorStop(0.5, '#4a123c');
-        grad.addColorStop(1, '#c25a1f');
-      } else if (this.activeStage === 2) { // Deep Sea gradient
-        grad.addColorStop(0, '#020b17');
-        grad.addColorStop(0.5, '#071d3a');
-        grad.addColorStop(1, '#0c2e59');
-      } else if (this.activeStage === 3) { // Desert sunset gradient
-        grad.addColorStop(0, '#2c042d');
-        grad.addColorStop(0.5, '#4d0b28');
-        grad.addColorStop(1, '#d47311');
-      }
+      grad.addColorStop(0, '#1a0933'); // Dark purple
+      grad.addColorStop(0.5, '#4a123c'); // Burgundy
+      grad.addColorStop(0.8, '#852b1b'); // Burnt orange
+      grad.addColorStop(1, '#c25a1f'); // Warm sunset yellow
       this.ctx.fillStyle = grad;
       this.ctx.fillRect(0, 0, this.width, this.height);
       
-      // Draw setting sun for farm/desert
-      if (this.activeStage === 1) {
-        this.ctx.fillStyle = '#ff7f36';
+      // Draw setting sun
+      this.ctx.fillStyle = '#ff7f36';
+      this.ctx.beginPath();
+      this.ctx.arc(this.width / 2, groundY - 10, 45, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Render moving clouds (15% speed relative movement)
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      const time = performance.now() * 0.0005;
+      const cloudSeeds = [
+        { seed: 100, y: 50, size: 25, speed: 8 },
+        { seed: 450, y: 35, size: 35, speed: 5 },
+        { seed: 700, y: 60, size: 20, speed: 12 }
+      ];
+      cloudSeeds.forEach(c => {
+        const cloudX = (c.seed - (time * c.speed * 40) - (scrollX * 0.15)) % (this.width + 100);
+        const drawX = cloudX < -100 ? cloudX + this.width + 200 : cloudX;
         this.ctx.beginPath();
-        this.ctx.arc(this.width / 2, groundY - 10, 45, 0, Math.PI * 2);
+        this.ctx.arc(drawX, c.y, c.size, 0, Math.PI * 2);
+        this.ctx.arc(drawX + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
+        this.ctx.arc(drawX - c.size * 0.6, c.y - c.size * 0.1, c.size * 0.7, 0, Math.PI * 2);
         this.ctx.fill();
-      } else if (this.activeStage === 3) {
-        this.ctx.fillStyle = '#f1c40f';
-        this.ctx.beginPath();
-        this.ctx.arc(this.width * 0.7, groundY - 5, 60, 0, Math.PI * 2);
-        this.ctx.fill();
+      });
+    } else {
+      // Stage 2 and 3 draw images as Layer 1
+      if (this.bgLoaded[this.activeStage]) {
+        const img = this.bgImages[this.activeStage];
+        const yPos = isTaskbar ? -50 : 0;
+        const imgScrollX = (scrollX * 0.15) % this.width;
+        const startTileIndex = Math.floor(imgScrollX / this.width);
+        
+        const x1 = startTileIndex * this.width - imgScrollX;
+        const isFlipped1 = (startTileIndex % 2 !== 0);
+        this.drawBgTile(img, x1, yPos, this.width, this.height, isFlipped1);
+        
+        const x2 = (startTileIndex + 1) * this.width - imgScrollX;
+        const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+        this.drawBgTile(img, x2, yPos, this.width, this.height, isFlipped2);
+      } else {
+        // Fallback gradients
+        const grad = this.ctx.createLinearGradient(0, 0, 0, this.height);
+        if (this.activeStage === 2) {
+          grad.addColorStop(0, '#020b17');
+          grad.addColorStop(0.5, '#071d3a');
+          grad.addColorStop(1, '#0c2e59');
+        } else if (this.activeStage === 3) {
+          grad.addColorStop(0, '#2c042d');
+          grad.addColorStop(0.5, '#4d0b28');
+          grad.addColorStop(1, '#d47311');
+        }
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        
+        if (this.activeStage === 3) {
+          this.ctx.fillStyle = '#f1c40f';
+          this.ctx.beginPath();
+          this.ctx.arc(this.width * 0.7, groundY - 5, 60, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
       }
     }
     
@@ -610,21 +635,37 @@ class GameEngine {
     // --- LAYER 2: MIDGROUND SILHOUETTES (45% Speed) ---
     const midOffset = (scrollX * 0.45) % this.width;
     
-    if (this.activeStage === 1) { // Farm Hills
-      this.ctx.fillStyle = '#1c2417';
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, this.height);
-      for (let t = 0; t <= 2; t++) {
-        const tileStart = t * this.width - midOffset;
-        for (let x = 0; x <= this.width; x += 15) {
-          const worldX = tileStart + x;
-          const y = Math.sin(worldX * 0.004) * 22 + Math.cos(worldX * 0.008) * 8 + groundY - 45;
-          this.ctx.lineTo(worldX, y);
+    if (this.activeStage === 1) { // Farm Midground Image (or fallback hills)
+      if (this.bgLoaded[1]) {
+        const img = this.bgImages[1];
+        const yPos = isTaskbar ? -50 : 0;
+        const imgScrollX = (scrollX * 0.45) % this.width;
+        const startTileIndex = Math.floor(imgScrollX / this.width);
+        
+        const x1 = startTileIndex * this.width - imgScrollX;
+        const isFlipped1 = (startTileIndex % 2 !== 0);
+        this.drawBgTile(img, x1, yPos, this.width, this.height, isFlipped1);
+        
+        const x2 = (startTileIndex + 1) * this.width - imgScrollX;
+        const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+        this.drawBgTile(img, x2, yPos, this.width, this.height, isFlipped2);
+      } else {
+        // Fallback hills
+        this.ctx.fillStyle = '#1c2417';
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, this.height);
+        for (let t = 0; t <= 2; t++) {
+          const tileStart = t * this.width - midOffset;
+          for (let x = 0; x <= this.width; x += 15) {
+            const worldX = tileStart + x;
+            const y = Math.sin(worldX * 0.004) * 22 + Math.cos(worldX * 0.008) * 8 + groundY - 45;
+            this.ctx.lineTo(worldX, y);
+          }
         }
+        this.ctx.lineTo(this.width * 2, this.height);
+        this.ctx.closePath();
+        this.ctx.fill();
       }
-      this.ctx.lineTo(this.width * 2, this.height);
-      this.ctx.closePath();
-      this.ctx.fill();
     } else if (this.activeStage === 2) { // Deep Sea Coral Reefs
       this.ctx.fillStyle = '#041021';
       this.ctx.beginPath();

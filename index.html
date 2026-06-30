@@ -482,7 +482,10 @@
             <input type="text" id="login-username" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
           </div>
           <div style="text-align: left; display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Password</label>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Password</label>
+              <span id="link-forgot-password" style="font-size: 10px; color: #b8860b; cursor: pointer; text-decoration: underline;">Forgot Password?</span>
+            </div>
             <input type="password" id="login-password" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
           </div>
           <div id="login-error" style="color: #ef4444; font-size: 11px; text-align: center; display: none;"></div>
@@ -492,16 +495,39 @@
         <!-- Signup Form -->
         <form id="form-signup" style="display: flex; flex-direction: column; gap: 15px; width: 100%; display: none;">
           <div style="text-align: left; display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Create Username</label>
+            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Username</label>
             <input type="text" id="signup-username" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
           </div>
           <div style="text-align: left; display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Create Password</label>
+            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Email Address</label>
+            <input type="email" id="signup-email" required placeholder="name@example.com" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
+          </div>
+          <div style="text-align: left; display: flex; flex-direction: column; gap: 5px;">
+            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Password</label>
             <input type="password" id="signup-password" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
           </div>
           <div id="signup-error" style="color: #ef4444; font-size: 11px; text-align: center; display: none;"></div>
           <div id="signup-success" style="color: #22c55e; font-size: 11px; text-align: center; display: none;"></div>
           <button type="submit" class="btn-primary" style="padding: 12px 0; font-size: 14px; text-transform: uppercase; font-weight: 800; cursor: pointer;">Register</button>
+        </form>
+
+        <!-- Forgot Password Form -->
+        <form id="form-recover" style="display: flex; flex-direction: column; gap: 15px; width: 100%; display: none;">
+          <div style="font-size: 11px; color: var(--text-secondary); text-align: center; margin-bottom: 5px;">Enter your username and registered email to retrieve your password.</div>
+          <div style="text-align: left; display: flex; flex-direction: column; gap: 5px;">
+            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Username</label>
+            <input type="text" id="recover-username" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
+          </div>
+          <div style="text-align: left; display: flex; flex-direction: column; gap: 5px;">
+            <label style="font-family: 'Cinzel', serif; font-size: 11px; color: #d4ac0d;">Email Address</label>
+            <input type="email" id="recover-email" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7d6608; background: rgba(24, 18, 12, 0.6); color: #fff; outline: none; font-size: 13px; box-sizing: border-box;">
+          </div>
+          <div id="recover-error" style="color: #ef4444; font-size: 11px; text-align: center; display: none;"></div>
+          <div id="recover-success" style="color: #22c55e; font-size: 11px; text-align: center; display: none; line-height: 1.4;"></div>
+          <div style="display: flex; gap: 10px; width: 100%;">
+            <button type="button" id="btn-recover-back" class="btn-control" style="flex: 1; padding: 10px 0; font-size: 12px; cursor: pointer;">Back</button>
+            <button type="submit" class="btn-primary" style="flex: 1; padding: 10px 0; font-size: 12px; cursor: pointer;">Recover</button>
+          </div>
         </form>
       </div>
     </div>

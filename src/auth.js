@@ -23,24 +23,36 @@
   }
 
   // Register a new user
-  window.authRegister = function(username, password) {
+  window.authRegister = function(username, email, password) {
     if (!username || username.trim() === '') {
       return { success: false, message: 'Username cannot be empty.' };
+    }
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      return { success: false, message: 'Please enter a valid email address.' };
     }
     if (!password || password.length < 4) {
       return { success: false, message: 'Password must be at least 4 characters.' };
     }
 
     const cleanUsername = username.trim().toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
     const accounts = getAccounts();
 
     if (accounts[cleanUsername]) {
       return { success: false, message: 'Username already exists.' };
     }
 
+    // Check if email already registered to another account
+    for (const key in accounts) {
+      if (accounts[key].email === cleanEmail) {
+        return { success: false, message: 'Email address already registered.' };
+      }
+    }
+
     // Create user entry
     accounts[cleanUsername] = {
       username: username.trim(), // Preserve casing
+      email: cleanEmail,
       password: password, // In a real cloud DB, this is encrypted/managed by Firebase Auth
       saveData: null
     };
@@ -98,6 +110,29 @@
     const accounts = getAccounts();
 
     return accounts[cleanUsername] ? accounts[cleanUsername].saveData : null;
+  };
+
+  // Recover/Retrieve Password
+  window.authRecoverPassword = function(username, email) {
+    if (!username || !email) {
+      return { success: false, message: 'Please enter both username and email.' };
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
+    const accounts = getAccounts();
+
+    const user = accounts[cleanUsername];
+    if (!user || user.email !== cleanEmail) {
+      return { success: false, message: 'No matching user found with those credentials.' };
+    }
+
+    // In a real cloud DB, this triggers a Firebase reset password email.
+    // For local mock testing, we return a success alert and tell them their password!
+    return { 
+      success: true, 
+      message: `Reset email sent to ${user.email}! (Test Key: Your password is "${user.password}")` 
+    };
   };
 
   // Check existing session on boot

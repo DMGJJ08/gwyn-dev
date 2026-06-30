@@ -989,14 +989,16 @@ document.addEventListener('DOMContentLoaded', () => {
     signupSuccess.style.display = 'none';
     
     const userVal = document.getElementById('signup-username').value;
+    const emailVal = document.getElementById('signup-email').value;
     const passVal = document.getElementById('signup-password').value;
     
-    const res = authRegister(userVal, passVal);
+    const res = authRegister(userVal, emailVal, passVal);
     if (res.success) {
       signupSuccess.textContent = res.message + " You can now login.";
       signupSuccess.style.display = 'block';
       // Reset inputs
       document.getElementById('signup-username').value = '';
+      document.getElementById('signup-email').value = '';
       document.getElementById('signup-password').value = '';
       // Switch back to login form after 1.5s
       setTimeout(() => {
@@ -1005,6 +1007,47 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       signupError.textContent = res.message;
       signupError.style.display = 'block';
+    }
+  });
+
+  // --- RECOVERY PASSWORD BINDINGS ---
+  const formRecover = document.getElementById('form-recover');
+  const linkForgotPassword = document.getElementById('link-forgot-password');
+  const btnRecoverBack = document.getElementById('btn-recover-back');
+  const recoverError = document.getElementById('recover-error');
+  const recoverSuccess = document.getElementById('recover-success');
+
+  linkForgotPassword.addEventListener('click', () => {
+    formLogin.style.display = 'none';
+    formSignup.style.display = 'none';
+    formRecover.style.display = 'flex';
+    // Clear alerts
+    recoverError.style.display = 'none';
+    recoverSuccess.style.display = 'none';
+  });
+
+  btnRecoverBack.addEventListener('click', () => {
+    formRecover.style.display = 'none';
+    formLogin.style.display = 'flex';
+  });
+
+  formRecover.addEventListener('submit', (e) => {
+    e.preventDefault();
+    recoverError.style.display = 'none';
+    recoverSuccess.style.display = 'none';
+
+    const userVal = document.getElementById('recover-username').value;
+    const emailVal = document.getElementById('recover-email').value;
+
+    const res = authRecoverPassword(userVal, emailVal);
+    if (res.success) {
+      recoverSuccess.textContent = res.message;
+      recoverSuccess.style.display = 'block';
+      document.getElementById('recover-username').value = '';
+      document.getElementById('recover-email').value = '';
+    } else {
+      recoverError.textContent = res.message;
+      recoverError.style.display = 'block';
     }
   });
 

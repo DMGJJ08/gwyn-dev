@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GWYN - Taskbar Idle RPG</title>
+  <link rel="stylesheet" href="style.css?v=3.0">
+  <style>
+    /* Ornate Medieval Main Menu Styles */
+    .main-menu-card {
+      background: rgba(14, 11, 8, 0.92) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 2px solid #b8860b !important;
+      outline: 1px solid #8b6508 !important;
+      outline-offset: 4px !important;
+      border-radius: 12px !important;
+      padding: 45px 35px !important;
+      max-width: 420px !important;
+      width: 90% !important;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 
+                  inset 0 0 30px rgba(184, 134, 11, 0.15),
+                  0 0 40px rgba(184, 134, 11, 0.25) !important;
+      z-index: 10 !important;
+      position: relative !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 20px !important;
+      box-sizing: border-box !important;
+    }
+
+    .main-menu-title {
+      font-family: 'Cinzel Decorative', 'Cinzel', serif !important;
+      font-size: 64px !important;
+      font-weight: 700 !important;
+      letter-spacing: 8px !important;
+      margin: 0 !important;
+      background: linear-gradient(180deg, #ffe066 0%, #f5b041 50%, #9a7d0a 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 15px rgba(245, 176, 65, 0.35)) !important;
+      margin-bottom: 2px !important;
+      display: block !important;
+    }
+
+    /* Medieval Button Styling Overrides for Menu */
+    .main-menu-card .btn-primary {
+      font-family: 'Cinzel', serif !important;
+      background: linear-gradient(180deg, #9a7d0a 0%, #7d6608 100%) !important;
+      border: 1px solid #d4ac0d !important;
+      color: #ffffff !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
+      box-shadow: 0 4px 12px rgba(184, 134, 11, 0.35) !important;
+      transition: all 0.3s ease !important;
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .main-menu-card .btn-primary:hover {
+      background: linear-gradient(180deg, #b8860b 0%, #9a7d0a 100%) !important;
+      box-shadow: 0 6px 18px rgba(184, 134, 11, 0.55) !important;
+      transform: translateY(-2px) scale(1.02) !important;
+    }
+
+    .main-menu-card .btn-control {
+      font-family: 'Cinzel', serif !important;
+      background: rgba(24, 18, 12, 0.5) !important;
+      border: 1px solid #7d6608 !important;
+      color: #e5c158 !important;
+      transition: all 0.3s ease !important;
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .main-menu-card .btn-control:hover {
+      background: rgba(184, 134, 11, 0.15) !important;
+      border-color: #d4ac0d !important;
+      color: #fff !important;
+      transform: translateY(-1px) !important;
+    }
+
+    .menu-fade-in-1 {
+      opacity: 0;
+      animation: menuSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+
+    .menu-fade-in-2 {
+      opacity: 0;
+      animation: menuSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards !important;
+    }
+
+    .menu-fade-in-3 {
+      opacity: 0;
+      animation: menuSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards !important;
+    }
+
+    @keyframes menuSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="game-title">GWYN</div>
+        <div class="gold-counter" style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: bold; background: hsla(45, 100%, 50%, 0.1); padding: 4px 10px; border-radius: 12px; border: 1px solid hsla(45, 100%, 50%, 0.25); color: var(--gold); letter-spacing: 0.5px; font-family: monospace;">
+          <span>🪙</span>
+          <span id="ui-gold">0</span>
+        </div>
+      </div>
+      <div class="header-controls" style="display: flex; gap: 8px;">
+        <button id="btn-reset-game" class="btn-control" style="background-color: hsla(0, 70%, 45%, 0.15); color: hsl(0, 100%, 75%); border-color: hsla(0, 70%, 45%, 0.3); font-size: 11px;">Reset Character</button>
+        <button id="btn-header-settings" class="btn-control" style="font-size: 11px;">⚙️ Settings</button>
+        <button id="btn-toggle-mode" class="btn-control">Taskbar Mode</button>
+      </div>
+    </header>
+
+    <!-- Canvas Wrapper -->
+    <div class="canvas-wrapper">
+      <canvas id="game-canvas" width="820" height="250"></canvas>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="app-dashboard">
+      <!-- Side Stats Panel -->
+      <aside class="stats-panel">
+        <div>
+          <div class="char-info">
+            <div id="ui-avatar" class="char-avatar"></div>
+            <div class="char-meta">
+              <h3 id="ui-name">Select Hero</h3>
+              <span id="ui-level" class="char-level">Lv.1 - Class</span>
+            </div>
+          </div>
+
+          <div class="stat-bars">
+            <div class="stat-bar-group">
+              <div class="stat-bar-label">
+                <span>HP</span>
+                <span id="ui-hp-text">0 / 0</span>
+              </div>
+              <div class="progress-track">
+                <div id="ui-hp-fill" class="progress-fill health" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="stat-bar-group">
+              <div class="stat-bar-label">
+                <span>MP</span>
+                <span id="ui-mp-text">0 / 0</span>
+              </div>
+              <div class="progress-track">
+                <div id="ui-mp-fill" class="progress-fill mana" style="width: 0%; background-color: hsl(210, 80%, 50%)"></div>
+              </div>
+            </div>
+
+            <div class="stat-bar-group">
+              <div class="stat-bar-label">
+                <span>XP</span>
+                <span id="ui-xp-text">0%</span>
+              </div>
+              <div class="progress-track">
+                <div id="ui-xp-fill" class="progress-fill xp" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-details">
+            <div class="stat-item">
+              <span class="stat-lbl">Damage</span>
+              <span id="ui-damage" class="stat-val">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-lbl">Range</span>
+              <span id="ui-range" class="stat-val">0px</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-lbl">Attack Speed</span>
+              <span id="ui-atk-speed" class="stat-val">0/s</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-lbl">Level Stage</span>
+              <span id="ui-stage-progress" class="stat-val">1 - 1</span>
+            </div>
+          </div>
+          
+          <!-- Attributes Panel -->
+          <div class="attribute-details" style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border);">
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--accent-light); letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 700;">Attributes</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; font-family: monospace;">
+              <div>STR: <span id="ui-attr-str" style="color:#fff; font-weight:bold;">1</span><span id="ui-attr-str-bonus" style="color:var(--accent); font-size:10px;">+0</span></div>
+              <div>INT: <span id="ui-attr-int" style="color:#fff; font-weight:bold;">1</span><span id="ui-attr-int-bonus" style="color:var(--accent); font-size:10px;">+0</span></div>
+              <div>AGI: <span id="ui-attr-agi" style="color:#fff; font-weight:bold;">1</span><span id="ui-attr-agi-bonus" style="color:var(--accent); font-size:10px;">+0</span></div>
+              <div>DEX: <span id="ui-attr-dex" style="color:#fff; font-weight:bold;">1</span><span id="ui-attr-dex-bonus" style="color:var(--accent); font-size:10px;">+0</span></div>
+              <div>VIT: <span id="ui-attr-vit" style="color:#fff; font-weight:bold;">1</span><span id="ui-attr-vit-bonus" style="color:var(--accent); font-size:10px;">+0</span></div>
+              <div>LUK: <span id="ui-attr-luk" style="color:#fff; font-weight:bold;">1</span><span id="ui-attr-luk-bonus" style="color:var(--accent); font-size:10px;">+0</span></div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Tabs Navigation & Content -->
+      <main class="tabs-panel">
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="tab-character">Hero Class</button>
+          <button class="tab-btn" data-tab="tab-shop">Upgrade Shop</button>
+          <button class="tab-btn" data-tab="tab-inventory">Inventory</button>
+          <button class="tab-btn" data-tab="tab-stages">Stages</button>
+        </nav>
+
+        <div class="tab-content">
+          <!-- Character Pane -->
+          <div id="tab-character" class="tab-pane active">
+            <div class="character-select-grid">
+              <div class="char-select-card" data-class="Warrior">
+                <div class="char-select-avatar" style="background-color: hsl(0, 70%, 40%)"></div>
+                <div class="char-select-name">Warrior</div>
+                <div class="char-select-desc">Melee fighter. High health and armor. Swings a sword that slices all close enemies.</div>
+                <div class="char-select-stats">
+                  <span>❤️ High</span>
+                  <span>⚔️ Mid</span>
+                  <span>📐 50px</span>
+                </div>
+              </div>
+
+              <div class="char-select-card" data-class="Archer">
+                <div class="char-select-avatar" style="background-color: hsl(120, 60%, 35%)"></div>
+                <div class="char-select-name">Archer</div>
+                <div class="char-select-desc">Ranged attacker. Very high attack speed. Fires single-target physical arrows.</div>
+                <div class="char-select-stats">
+                  <span>❤️ Mid</span>
+                  <span>⚔️ High</span>
+                  <span>📐 300px</span>
+                </div>
+              </div>
+
+              <div class="char-select-card" data-class="Mage">
+                <div class="char-select-avatar" style="background-color: hsl(210, 80%, 45%)"></div>
+                <div class="char-select-name">Mage</div>
+                <div class="char-select-desc">Spellslinger. Shoots fireballs that move slowly but explode in a wide Area-of-Effect.</div>
+                <div class="char-select-stats">
+                  <span>❤️ Low</span>
+                  <span>⚔️ Splash</span>
+                  <span>📐 250px</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shop Pane -->
+          <div id="tab-shop" class="tab-pane">
+            <div class="shop-grid">
+              <div class="shop-card" data-upgrade="weapon">
+                <div class="shop-item-info">
+                  <span class="shop-item-title">Upgrade Weapon</span>
+                  <span id="shop-weapon-lvl" class="shop-item-desc">Level 1 (+0 Atk)</span>
+                </div>
+                <button id="btn-buy-weapon" class="btn-buy">
+                  <span>🪙</span> <span id="shop-weapon-cost">50</span>
+                </button>
+              </div>
+
+              <div class="shop-card" data-upgrade="armor">
+                <div class="shop-item-info">
+                  <span class="shop-item-title">Upgrade Armor</span>
+                  <span id="shop-armor-lvl" class="shop-item-desc">Level 1 (+0 HP)</span>
+                </div>
+                <button id="btn-buy-armor" class="btn-buy">
+                  <span>🪙</span> <span id="shop-armor-cost">50</span>
+                </button>
+              </div>
+
+              <div class="shop-card" data-upgrade="ring">
+                <div class="shop-item-info">
+                  <span class="shop-item-title">Upgrade Ring</span>
+                  <span id="shop-ring-lvl" class="shop-item-desc">Level 1 (+0% Atk Spd)</span>
+                </div>
+                <button id="btn-buy-ring" class="btn-buy">
+                  <span>🪙</span> <span id="shop-ring-cost">75</span>
+                </button>
+              </div>
+
+              <!-- Usable Potions and VIP Coin Store -->
+              <div class="shop-card" data-buy-item="hp_potion">
+                <div class="shop-item-info">
+                  <span class="shop-item-title">HP Potion (5x)</span>
+                  <span class="shop-item-desc">Restores 50 Health Points instantly.</span>
+                </div>
+                <button id="btn-buy-hp-potion" class="btn-buy">
+                  <span>🪙</span> <span>10</span>
+                </button>
+              </div>
+
+              <div class="shop-card" data-buy-item="mp_potion">
+                <div class="shop-item-info">
+                  <span class="shop-item-title">MP Potion (5x)</span>
+                  <span class="shop-item-desc">Restores 30 Mana Points instantly.</span>
+                </div>
+                <button id="btn-buy-mp-potion" class="btn-buy">
+                  <span>🪙</span> <span>10</span>
+                </button>
+              </div>
+
+              <div class="shop-card" data-buy-item="vip2coin">
+                <div class="shop-item-info">
+                  <span class="shop-item-title">VIP Coin (vip2coin)</span>
+                  <span class="shop-item-desc">Unlocks the VIP Auto-Heal dashboard feature.</span>
+                </div>
+                <button id="btn-buy-vip-coin" class="btn-buy">
+                  <span>🪙</span> <span>150</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inventory Pane -->
+          <div id="tab-inventory" class="tab-pane">
+            <div class="inventory-container" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; height: 100%;">
+              <!-- Left Side: Bag -->
+              <div class="inventory-bag-section" style="border-right: 1px solid var(--border); padding-right: 15px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                  <button class="bag-tab-btn active" data-bag-tab="bag-usable" style="background:none; border:none; color:var(--text-primary); font-weight:bold; cursor:pointer; font-size:12px;">Usables</button>
+                  <span style="color:var(--border);">|</span>
+                  <button class="bag-tab-btn" data-bag-tab="bag-etc" style="background:none; border:none; color:var(--text-muted); font-weight:bold; cursor:pointer; font-size:12px;">Etc</button>
+                </div>
+                
+                <!-- Usable Bag Grid -->
+                <div id="bag-usable" class="bag-grid active" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                  <div class="bag-slot item-usable" data-item-id="hp_potion" draggable="true" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; cursor: grab;">
+                    <span style="font-size: 20px;">🧪</span>
+                    <span style="font-size: 10px; font-weight: bold; color: var(--health);">HP Pot</span>
+                    <span class="item-count" id="count-hp-potion" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">0</span>
+                  </div>
+                  <div class="bag-slot item-usable" data-item-id="mp_potion" draggable="true" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; cursor: grab;">
+                    <span style="font-size: 20px;">🧪</span>
+                    <span style="font-size: 10px; font-weight: bold; color: hsl(210, 80%, 65%);">MP Pot</span>
+                    <span class="item-count" id="count-mp-potion" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">0</span>
+                  </div>
+                </div>
+                
+                <!-- Etc Bag Grid -->
+                <div id="bag-etc" class="bag-grid" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                  <div class="bag-slot" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                    <span style="font-size: 20px;">🪙</span>
+                    <span style="font-size: 10px; font-weight: bold; color: var(--gold);">VIP Coin</span>
+                    <span class="item-count" id="count-vip-coin" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">0</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Right Side: VIP Auto-Heal Setup -->
+              <div class="inventory-vip-section">
+                <!-- Locked Notice Overlay -->
+                <div id="vip-locked-notice" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--text-muted); gap: 8px;">
+                  <span style="font-size: 28px;">🔒</span>
+                  <div style="font-weight: bold; color: var(--text-secondary);">VIP Auto-Heal Locked</div>
+                  <div style="font-size: 11px; max-width: 160px; line-height: 1.4;">Requires a <strong>VIP Coin (vip2coin)</strong> in the Etc Inventory tab to unlock.</div>
+                </div>
+                
+                <!-- Active VIP Panel -->
+                <div id="vip-active-panel" style="display: none; flex-direction: column; gap: 12px; height: 100%;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                    <span style="font-weight: bold; font-size: 13px; color: var(--gold);">⚡ VIP Auto-Heal</span>
+                    <label class="switch-container" style="display: flex; align-items: center; gap: 6px; font-size: 11px; cursor: pointer;">
+                      <input type="checkbox" id="chk-auto-heal-active"> Active
+                    </label>
+                  </div>
+                  
+                  <!-- HP Auto slot -->
+                  <div class="auto-heal-setup-group" style="background: var(--bg-card-hover); border: 1px solid var(--border); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div class="assigned-slot-dropzone" id="slot-hp-potion" style="width: 48px; height: 48px; border: 2px dashed var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; position: relative;">
+                        <span class="slot-placeholder" style="font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1;">Drop HP</span>
+                      </div>
+                      <div style="flex: 1;">
+                        <div style="font-weight: bold; font-size: 11px; color: var(--health);">HP Trigger Threshold</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                          <input type="range" id="slider-hp-heal" min="0" max="100" value="35" style="flex: 1; height: 4px; accent-color: var(--health);">
+                          <span id="lbl-hp-heal" style="font-size: 11px; font-weight: bold; font-family: monospace; min-width: 28px;">35%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- MP Auto slot -->
+                  <div class="auto-heal-setup-group" style="background: var(--bg-card-hover); border: 1px solid var(--border); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div class="assigned-slot-dropzone" id="slot-mp-potion" style="width: 48px; height: 48px; border: 2px dashed var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; position: relative;">
+                        <span class="slot-placeholder" style="font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1;">Drop MP</span>
+                      </div>
+                      <div style="flex: 1;">
+                        <div style="font-weight: bold; font-size: 11px; color: hsl(210, 80%, 65%);">MP Trigger Threshold</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                          <input type="range" id="slider-mp-heal" min="0" max="100" value="35" style="flex: 1; height: 4px; accent-color: hsl(210, 80%, 50%);">
+                          <span id="lbl-mp-heal" style="font-size: 11px; font-weight: bold; font-family: monospace; min-width: 28px;">35%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stages Pane -->
+          <div id="tab-stages" class="tab-pane">
+            <div class="stage-list">
+              <div class="stage-card active" data-stage="1">
+                <div class="stage-info">
+                  <span class="stage-title">Stage 1: The Farm</span>
+                  <span class="stage-desc">Battle chickens, pigs, sheep, and the giant bull.</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 90px;">
+                  <span class="stage-status">Active</span>
+                  <button class="btn-dev-boss" data-stage="1" style="background: var(--health); color: white; border: none; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer;">👹 Skip to Boss</button>
+                </div>
+              </div>
+
+              <div class="stage-card locked" data-stage="2">
+                <div class="stage-info">
+                  <span class="stage-title">Stage 2: Underwater</span>
+                  <span class="stage-desc">Dive deep. Fight jellyfish, crabs, and the kraken.</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 90px;">
+                  <span class="stage-status">Locked</span>
+                  <button class="btn-dev-boss" data-stage="2" style="background: var(--health); color: white; border: none; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer;">👹 Skip to Boss</button>
+                </div>
+              </div>
+
+              <div class="stage-card locked" data-stage="3">
+                <div class="stage-info">
+                  <span class="stage-title">Stage 3: The Desert</span>
+                  <span class="stage-desc">Survive cobras, mummies, and the pharaoh.</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 90px;">
+                  <span class="stage-status">Locked</span>
+                  <button class="btn-dev-boss" data-stage="3" style="background: var(--health); color: white; border: none; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer;">👹 Skip to Boss</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Start Overlay (Modal) -->
+    <div id="start-overlay" class="overlay show">
+      <div class="overlay-content-wrapper">
+        <div class="overlay-title">GWYN</div>
+        <div class="overlay-desc">Select your starting class and allocate 9 attribute points to begin your adventure!</div>
+        
+        <!-- Class Selector -->
+        <h3 class="section-title">1. Select Hero Class</h3>
+        <div class="overlay-class-grid">
+          <div class="overlay-class-card selected" data-class="Warrior">
+            <div class="overlay-class-avatar" style="background-image: url('assets/Gemini_Generated_Image_3t4xfn3t4xfn3t4x-removebg-preview.png'); background-position: 0% 0%; background-size: 400% 400%;"></div>
+            <div class="overlay-class-name">Warrior</div>
+            <div class="overlay-class-desc">Swordsman. High VIT & STR. Deals melee damage to all nearby targets.</div>
+            <div class="overlay-class-bonus">STR+4, AGI+1, VIT+3, DEX+2, LUK+1</div>
+          </div>
+          
+          <div class="overlay-class-card" data-class="Archer">
+            <div class="overlay-class-avatar" style="background-image: url('assets/Gemini_Generated_Image_6fnz0d6fnz0d6fnz-removebg-preview.png'); background-position: 0% 0%; background-size: 400% 400%;"></div>
+            <div class="overlay-class-name">Archer</div>
+            <div class="overlay-class-desc">Ranged sniper. High AGI & DEX. Fast single-target physical arrows.</div>
+            <div class="overlay-class-bonus">STR+1, AGI+4, VIT+1, DEX+3, LUK+1</div>
+          </div>
+          
+          <div class="overlay-class-card" data-class="Mage">
+            <div class="overlay-class-avatar" style="background-image: url('assets/Gemini_Generated_Image_vkuw7evkuw7evkuw-removebg-preview.png'); background-position: 0% 0%; background-size: 400% 400%;"></div>
+            <div class="overlay-class-name">Mage</div>
+            <div class="overlay-class-desc">Spellcaster. High INT & DEX. Launches AoE splash fireballs.</div>
+            <div class="overlay-class-bonus">AGI+1, VIT+2, INT+5, DEX+2, LUK+0</div>
+          </div>
+        </div>
+        
+        <!-- Attribute Points Allocator -->
+        <h3 class="section-title">2. Allocate Attributes (<span id="overlay-points-left">9</span> Points Left)</h3>
+        <div class="overlay-attributes-allocator">
+          <div class="attr-alloc-row">
+            <div class="attr-alloc-lbl">STR <small>Melee ATK & Weapon DMG</small></div>
+            <div class="attr-alloc-controls">
+              <button class="btn-minus" data-stat="str">-</button>
+              <span class="attr-alloc-val" id="alloc-val-str">1</span>
+              <span class="attr-alloc-bonus" id="alloc-bonus-str">+7</span>
+              <button class="btn-plus" data-stat="str">+</button>
+            </div>
+          </div>
+          <div class="attr-alloc-row">
+            <div class="attr-alloc-lbl">AGI <small>Attack Speed & Flee Rate</small></div>
+            <div class="attr-alloc-controls">
+              <button class="btn-minus" data-stat="agi">-</button>
+              <span class="attr-alloc-val" id="alloc-val-agi">1</span>
+              <span class="attr-alloc-bonus" id="alloc-bonus-agi">+2</span>
+              <button class="btn-plus" data-stat="agi">+</button>
+            </div>
+          </div>
+          <div class="attr-alloc-row">
+            <div class="attr-alloc-lbl">VIT <small>Max HP & Soft DEF</small></div>
+            <div class="attr-alloc-controls">
+              <button class="btn-minus" data-stat="vit">-</button>
+              <span class="attr-alloc-val" id="alloc-val-vit">1</span>
+              <span class="attr-alloc-bonus" id="alloc-bonus-vit">+4</span>
+              <button class="btn-plus" data-stat="vit">+</button>
+            </div>
+          </div>
+          <div class="attr-alloc-row">
+            <div class="attr-alloc-lbl">INT <small>Magic Attack (MATK)</small></div>
+            <div class="attr-alloc-controls">
+              <button class="btn-minus" data-stat="int">-</button>
+              <span class="attr-alloc-val" id="alloc-val-int">1</span>
+              <span class="attr-alloc-bonus" id="alloc-bonus-int">+0</span>
+              <button class="btn-plus" data-stat="int">+</button>
+            </div>
+          </div>
+          <div class="attr-alloc-row">
+            <div class="attr-alloc-lbl">DEX <small>Ranged ATK & Hit Rate</small></div>
+            <div class="attr-alloc-controls">
+              <button class="btn-minus" data-stat="dex">-</button>
+              <span class="attr-alloc-val" id="alloc-val-dex">1</span>
+              <span class="attr-alloc-bonus" id="alloc-bonus-dex">+3</span>
+              <button class="btn-plus" data-stat="dex">+</button>
+            </div>
+          </div>
+          <div class="attr-alloc-row">
+            <div class="attr-alloc-lbl">LUK <small>Critical Rate & Bonus ATK</small></div>
+            <div class="attr-alloc-controls">
+              <button class="btn-minus" data-stat="luk">-</button>
+              <span class="attr-alloc-val" id="alloc-val-luk">1</span>
+              <span class="attr-alloc-bonus" id="alloc-bonus-luk">+2</span>
+              <button class="btn-plus" data-stat="luk">+</button>
+            </div>
+          </div>
+        </div>
+        
+        <button id="btn-start-game" class="btn-primary" disabled style="margin-top: 15px; width: 100%;">Allocate All Points to Start</button>
+      </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="gameover-overlay" class="overlay">
+      <div class="overlay-title" style="color: var(--health)">DEFEAT</div>
+      <div class="overlay-desc">Your hero was overwhelmed by the beasts! Rest up, upgrade your equipment, and try again.</div>
+      <button id="btn-respawn" class="btn-primary">Respawn & Continue</button>
+    </div>
+
+    <!-- Main Menu Overlay -->
+    <div id="main-menu-overlay" class="overlay show" style="z-index: 1000; background: #07080c; overflow: hidden; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+      <!-- Canvas for background animated particles -->
+      <canvas id="main-menu-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+      
+      <div class="main-menu-card menu-fade-in-1">
+        <h1 class="main-menu-title">GWYN</h1>
+        <div style="color: #d4ac0d; font-size: 13px; margin: 4px 0 10px 0; letter-spacing: 2px;">✥ ⚔ ✥</div>
+        <div style="font-family: 'Cinzel', serif; font-size: 12px; color: #d4ac0d; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 25px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">An Idle Fantasy Adventure</div>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; z-index: 2; position: relative;">
+          <button id="btn-menu-start" class="btn-primary menu-fade-in-2" style="padding: 14px 0; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; cursor: pointer;">Start Game</button>
+          <button id="btn-menu-settings" class="btn-control menu-fade-in-3" style="padding: 12px 0; font-size: 14px; cursor: pointer;">Settings</button>
+          <button id="btn-menu-exit" class="btn-control menu-fade-in-3" style="padding: 12px 0; font-size: 14px; cursor: pointer;">Exit Game</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div id="settings-overlay" class="overlay" style="z-index: 1050; background: rgba(8, 9, 12, 0.9);">
+      <div class="overlay-content-wrapper" style="width: 320px; gap: 15px;">
+        <h2 style="font-size: 22px; font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px;">⚙️ Settings</h2>
+        
+        <!-- Volume Control -->
+        <div class="settings-control-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 12px; font-weight: bold; color: var(--text-secondary); display: flex; justify-content: space-between;">
+            <span>Master Volume</span>
+            <span id="lbl-volume">50%</span>
+          </label>
+          <input type="range" id="slider-volume" min="0" max="100" value="50" style="width: 100%; height: 6px; accent-color: var(--accent);">
+        </div>
+        
+        <!-- FPS Limit Control -->
+        <div class="settings-control-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+          <label style="font-size: 12px; font-weight: bold; color: var(--text-secondary);">FPS Limit</label>
+          <select id="select-fps" style="width: 100%; background: var(--bg-card-hover); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; outline: none; cursor: pointer;">
+            <option value="60">60 FPS (Default)</option>
+            <option value="30">30 FPS (Low Power)</option>
+          </select>
+        </div>
+        
+        <button id="btn-settings-close" class="btn-primary" style="margin-top: 15px; width: 100%;">Close</button>
+      </div>
+    </div>
+
+    <!-- Exit Game Overlay -->
+    <div id="exit-overlay" class="overlay" style="z-index: 2000; background: #000; display: none;">
+      <div class="overlay-content-wrapper" style="text-align: center; gap: 15px;">
+        <div style="font-size: 36px;">💤</div>
+        <h2 style="font-size: 24px; font-weight: 800; color: #fff;">Game Closed</h2>
+        <div style="font-size: 13px; color: var(--text-secondary); max-width: 240px; line-height: 1.5;">You can now safely close this browser window or tab. Thank you for playing!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Scripts -->
+  <script src="src/entities.js?v=3.0"></script>
+  <script src="src/game.js?v=3.0"></script>
+  <script src="src/main.js?v=3.0"></script>
+</body>
+</html>

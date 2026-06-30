@@ -1,0 +1,8 @@
+node_modules/
+assets.zip
+*.js
+!src/*.js
+*.html
+!index.html
+*.ps1
+*.txt

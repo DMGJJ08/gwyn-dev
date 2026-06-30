@@ -323,13 +323,16 @@
           const imgScrollX = (scrollX * 0.45) % canvas.width;
           const startTileIndex = Math.floor(imgScrollX / canvas.width);
           
+          const yPos = groundY - canvas.width * 0.508;
+          const drawH = canvas.width;
+          
           const x1 = startTileIndex * canvas.width - imgScrollX;
           const isFlipped1 = (startTileIndex % 2 !== 0);
-          drawBgTile(img, x1, 0, canvas.width, canvas.height, isFlipped1);
+          drawBgTile(img, x1, yPos, canvas.width, drawH, isFlipped1);
           
           const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
           const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
-          drawBgTile(img, x2, 0, canvas.width, canvas.height, isFlipped2);
+          drawBgTile(img, x2, yPos, canvas.width, drawH, isFlipped2);
         } else {
           // Fallback dynamic hills if image is not loaded
           ctx.fillStyle = '#1c2417';

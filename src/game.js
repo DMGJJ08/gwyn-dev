@@ -641,17 +641,19 @@ class GameEngine {
     if (this.activeStage === 1) { // Farm Midground Image (or fallback hills)
       if (this.bgLoaded[1]) {
         const img = this.bgImages[1];
-        const yPos = isTaskbar ? -50 : 0;
         const imgScrollX = (scrollX * 0.45) % this.width;
         const startTileIndex = Math.floor(imgScrollX / this.width);
         
+        const yPos = groundY - this.width * 0.508;
+        const drawH = this.width;
+        
         const x1 = startTileIndex * this.width - imgScrollX;
         const isFlipped1 = (startTileIndex % 2 !== 0);
-        this.drawBgTile(img, x1, yPos, this.width, this.height, isFlipped1);
+        this.drawBgTile(img, x1, yPos, this.width, drawH, isFlipped1);
         
         const x2 = (startTileIndex + 1) * this.width - imgScrollX;
         const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
-        this.drawBgTile(img, x2, yPos, this.width, this.height, isFlipped2);
+        this.drawBgTile(img, x2, yPos, this.width, drawH, isFlipped2);
       } else {
         // Fallback hills
         this.ctx.fillStyle = '#1c2417';

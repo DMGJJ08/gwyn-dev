@@ -1150,25 +1150,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- INITIAL STARTUP HANDLER ---
-  // Check secret developer key in URL for instant login bypass
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('devkey') === 'gwynadmin') {
-    window.currentUser = 'Developer';
-    localStorage.setItem('gwyn_current_user', 'Developer');
-    
-    // Auto-register mock developer profile if it does not exist
-    const STORAGE_KEY = 'gwyn_auth_accounts';
-    const accounts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    if (!accounts['developer']) {
-      accounts['developer'] = {
-        username: 'Developer',
-        email: 'admin@gwyn.com',
-        password: 'admin',
-        saveData: null
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
-    }
-  }
 
   if (authCheckSession()) {
     authOverlay.style.display = 'none';

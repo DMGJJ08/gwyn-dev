@@ -10,7 +10,19 @@
   function getAccounts() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : {};
+      const accounts = data ? JSON.parse(data) : {};
+      
+      // Pre-register default Developer account if missing
+      if (!accounts['developer']) {
+        accounts['developer'] = {
+          username: 'Developer',
+          email: 'admin@gwyn.com',
+          password: 'gwynadmin',
+          saveData: null
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+      }
+      return accounts;
     } catch (e) {
       console.error("Failed to parse accounts:", e);
       return {};
@@ -35,6 +47,11 @@
     }
 
     const cleanUsername = username.trim().toLowerCase();
+    
+    // Restrict public registration of developer and admin accounts
+    if (cleanUsername === 'developer' || cleanUsername === 'admin') {
+      return { success: false, message: 'This username is reserved.' };
+    }
     const cleanEmail = email.trim().toLowerCase();
     const accounts = getAccounts();
 

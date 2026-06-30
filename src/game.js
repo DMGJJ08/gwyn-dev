@@ -178,7 +178,7 @@ class GameEngine {
     this.height = height;
     this.canvas.height = height;
     const isTaskbar = height < 150;
-    groundY = isTaskbar ? (height - 20) : Math.round(height * 0.68);
+    groundY = isTaskbar ? (height - 20) : Math.round(height * 0.71);
   }
   
   initGame(playerClass, allocatedStats = null) {
@@ -706,7 +706,13 @@ class GameEngine {
         const img = this.farmFore;
         const imgScrollX = (scrollX * 1.0) % this.width;
         const startTileIndex = Math.floor(imgScrollX / this.width);
-        const drawH = this.height - groundY;
+        
+        // Compress path/foreground vertically to 80px
+        const drawH = 80;
+        
+        // Draw bottom solid dirt base to fill up canvas height
+        this.ctx.fillStyle = '#3a210f';
+        this.ctx.fillRect(0, groundY + drawH - 5, this.width, this.height - (groundY + drawH - 5));
         
         const x1 = startTileIndex * this.width - imgScrollX;
         const isFlipped1 = (startTileIndex % 2 !== 0);

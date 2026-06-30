@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gwyn RPG - Parallax Scenery Architect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080c;
+      --card-bg: rgba(18, 22, 33, 0.85);
+      --border: rgba(212, 172, 13, 0.2);
+      --gold: #d4ac0d;
+      --gold-hover: #f1c40f;
+      --text: #ffffff;
+      --text-secondary: #a0a5b5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+      text-align: center;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 28px;
+      color: var(--gold);
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 25px;
+    }
+
+    /* Canvas Frame */
+    .canvas-container {
+      position: relative;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 25px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 250px;
+    }
+
+    /* Controls Panel */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      text-align: left;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-group label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    select, input[type="range"] {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      user-select: none;
+    }
+
+    .checkbox-item input {
+      accent-color: var(--gold);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .layer-color-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .c-far { background: #b8860b; }
+    .c-mid { background: #228b22; }
+    .c-fore { background: #8b4513; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Scenery Layer Architect</h1>
+    <div class="subtitle">Interactive Parallax Layers Preview</div>
+
+    <!-- Gameplay Preview Canvas -->
+    <div class="canvas-container">
+      <canvas id="preview-canvas" width="800" height="250"></canvas>
+    </div>
+
+    <!-- Controls dashboard -->
+    <div class="controls-grid">
+      <!-- Stage Selector -->
+      <div class="control-group">
+        <label for="select-stage">Select Environment</label>
+        <select id="select-stage">
+          <option value="1">Stage 1: Sunset Farm</option>
+          <option value="2">Stage 2: Deep Sea</option>
+          <option value="3">Stage 3: Desert Oasis</option>
+        </select>
+      </div>
+
+      <!-- Scroll Speed Slider -->
+      <div class="control-group">
+        <label for="slider-speed">Simulated Speed: <span id="lbl-speed">150</span>px/s</label>
+        <input type="range" id="slider-speed" min="0" max="400" value="150">
+      </div>
+
+      <!-- Layer Toggles -->
+      <div class="control-group">
+        <label>Layer Visibility</label>
+        <div class="checkbox-list">
+          <label class="checkbox-item">
+            <input type="checkbox" id="chk-layer1" checked>
+            <span class="layer-color-indicator c-far"></span>
+            <span>Layer 1 (Far / Sky - 10% Speed)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chk-layer2" checked>
+            <span class="layer-color-indicator c-mid"></span>
+            <span>Layer 2 (Midground - 45% Speed)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chk-layer3" checked>
+            <span class="layer-color-indicator c-fore"></span>
+            <span>Layer 3 (Foreground - 100% Speed)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('preview-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Controls DOM
+    const selectStage = document.getElementById('select-stage');
+    const sliderSpeed = document.getElementById('slider-speed');
+    const lblSpeed = document.getElementById('lbl-speed');
+    const chkLayer1 = document.getElementById('chk-layer1');
+    const chkLayer2 = document.getElementById('chk-layer2');
+    const chkLayer3 = document.getElementById('chk-layer3');
+
+    // Simulation Config
+    let activeStage = 1;
+    let scrollSpeed = 150;
+    let bgOffset = 0;
+    let lastTime = performance.now();
+    const groundY = canvas.height - 28;
+
+    // Drifting cloud variables for Farm stage
+    const clouds = [
+      { x: 100, y: 50, size: 25, speed: 8 },
+      { x: 450, y: 35, size: 35, speed: 5 },
+      { x: 700, y: 60, size: 20, speed: 12 }
+    ];
+
+    // Bubbles for Underwater stage
+    const bubbles = [];
+    for (let i = 0; i < 15; i++) {
+      bubbles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 3 + 1,
+        speedY: Math.random() * 20 + 10,
+        drift: Math.random() * 2 - 1
+      });
+    }
+
+    // Event Listeners
+    selectStage.addEventListener('change', (e) => activeStage = parseInt(e.target.value));
+    sliderSpeed.addEventListener('input', (e) => {
+      scrollSpeed = parseInt(e.target.value);
+      lblSpeed.textContent = scrollSpeed;
+    });
+
+    // --- RENDER LAYERS ---
+
+    // 1. STAGE 1: SUNSET FARM
+    function drawFarm(dt) {
+      const scrollX = bgOffset;
+
+      // Layer 1: Sky & Sunset Clouds
+      if (chkLayer1.checked) {
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGrad.addColorStop(0, '#1a0933'); // Dark purple
+        skyGrad.addColorStop(0.5, '#4a123c'); // Burgundy
+        skyGrad.addColorStop(0.8, '#852b1b'); // Burnt orange
+        skyGrad.addColorStop(1, '#c25a1f'); // Warm sunset yellow
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw sun setting
+        ctx.fillStyle = '#ff7f36';
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = '#ff5100';
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, groundY - 10, 45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset shadow
+
+        // Render cloud layers (10% speed relative movement)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+        clouds.forEach(c => {
+          c.x = (c.x - c.speed * dt - (scrollSpeed * 0.05 * dt)) % (canvas.width + 100);
+          if (c.x < -100) c.x = canvas.width + 100;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+          ctx.arc(c.x + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
+          ctx.arc(c.x - c.size * 0.6, c.y - c.size * 0.1, c.size * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // Layer 2: Parallax Rolling Hills (45% Speed)
+      if (chkLayer2.checked) {
+        ctx.fillStyle = '#1c2417'; // Deep dark forest green silhouette
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height);
+
+        const midOffset = (scrollX * 0.45) % canvas.width;
+        
+        // Render 2 tiles seamlessly
+        for (let t = 0; t <= 2; t++) {
+          const tileStart = t * canvas.width - midOffset;
+          for (let x = 0; x <= canvas.width; x += 10) {
+            const worldX = tileStart + x;
+            // Procedural hill calculation using sine waves
+            const y = Math.sin(worldX * 0.004) * 25 + Math.cos(worldX * 0.008) * 10 + groundY - 45;
+            ctx.lineTo(worldX, y);
+          }
+        }
+        ctx.lineTo(canvas.width * 2, canvas.height);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Layer 3: Foreground Ground & Fences (100% Speed)
+      if (chkLayer3.checked) {
+        // Draw primary ground
+        ctx.fillStyle = '#0f140d'; // Mud / dark organic base
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+        
+        ctx.fillStyle = '#223018'; // Grass surface line
+        ctx.fillRect(0, groundY, canvas.width, 4);
+
+        // Draw fence posts at full speed
+        ctx.fillStyle = '#131210';
+        ctx.strokeStyle = '#1d1b17';
+        ctx.lineWidth = 3;
+
+        const postSpacing = 160;
+        const foreOffset = scrollX % postSpacing;
+
+        for (let x = -postSpacing; x < canvas.width + postSpacing; x += postSpacing) {
+          const postX = x - foreOffset + 50;
+          // Draw fence posts
+          ctx.fillRect(postX, groundY - 24, 6, 24);
+          // Draw connecting fence rails
+          ctx.beginPath();
+          ctx.moveTo(postX - 5, groundY - 16);
+          ctx.lineTo(postX + postSpacing + 5, groundY - 16);
+          ctx.moveTo(postX - 5, groundY - 8);
+          ctx.lineTo(postX + postSpacing + 5, groundY - 8);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 2. STAGE 2: DEEP SEA
+    function drawDeepSea(dt) {
+      const scrollX = bgOffset;
+
+      // Layer 1: Ambient Rays & Ocean Gradient (15% Speed)
+      if (chkLayer1.checked) {
+        const waterGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        waterGrad.addColorStop(0, '#020b17'); // Pitch dark blue
+        waterGrad.addColorStop(0.5, '#071d3a'); // Dark sea blue
+        waterGrad.addColorStop(1, '#0c2e59'); // Soft deep teal base
+        ctx.fillStyle = waterGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // God rays rotating slowly
+        ctx.fillStyle = 'rgba(12, 146, 204, 0.025)';
+        const time = performance.now() * 0.0005;
+        for (let i = 0; i < 4; i++) {
+          const angle = (i * Math.PI / 4) + Math.sin(time) * 0.05;
+          ctx.beginPath();
+          ctx.moveTo(canvas.width / 2, -20);
+          ctx.lineTo(canvas.width / 2 + Math.cos(angle - 0.2) * 500, canvas.height + 50);
+          ctx.lineTo(canvas.width / 2 + Math.cos(angle + 0.2) * 500, canvas.height + 50);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Bubbles floating up
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1;
+        bubbles.forEach(b => {
+          b.y -= b.speedY * dt;
+          b.x += Math.sin(time * 3 + b.drift) * 0.2;
+          if (b.y < -10) {
+            b.y = canvas.height + 10;
+            b.x = Math.random() * canvas.width;
+          }
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+      }
+
+      // Layer 2: Coral Silhouette Reefs (45% Speed)
+      if (chkLayer2.checked) {
+        ctx.fillStyle = '#041021'; // Dark underwater structure silhouette
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height);
+
+        const midOffset = (scrollX * 0.45) % canvas.width;
+        for (let t = 0; t <= 2; t++) {
+          const tileStart = t * canvas.width - midOffset;
+          for (let x = 0; x <= canvas.width; x += 15) {
+            const worldX = tileStart + x;
+            // Rough rocky coral wave shape
+            const y = Math.cos(worldX * 0.005) * 15 + Math.sin(worldX * 0.015) * 8 + groundY - 40;
+            ctx.lineTo(worldX, y);
+          }
+        }
+        ctx.lineTo(canvas.width * 2, canvas.height);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Layer 3: Foreground Sea Bed & Seaweed (100% Speed)
+      if (chkLayer3.checked) {
+        // Draw sandy seabed
+        ctx.fillStyle = '#02070f';
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+        
+        ctx.fillStyle = '#06162a';
+        ctx.fillRect(0, groundY, canvas.width, 3);
+
+        // Draw seaweed clumps waving using trig waves
+        ctx.strokeStyle = '#08253e';
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+
+        const seaweedSpacing = 90;
+        const foreOffset = scrollX % seaweedSpacing;
+        const time = performance.now() * 0.003;
+
+        for (let x = -seaweedSpacing; x < canvas.width + seaweedSpacing; x += seaweedSpacing) {
+          const plantX = x - foreOffset + 30;
+          const sway = Math.sin(time + plantX) * 12;
+
+          ctx.beginPath();
+          ctx.moveTo(plantX, groundY);
+          ctx.quadraticCurveTo(plantX - 5 + sway * 0.5, groundY - 20, plantX + sway, groundY - 40);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 3. STAGE 3: DESERT OASIS
+    function drawDesert(dt) {
+      const scrollX = bgOffset;
+
+      // Layer 1: Scorching Sky & Giant Sun (10% Speed)
+      if (chkLayer1.checked) {
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGrad.addColorStop(0, '#2c042d'); // Sunset magenta-purple
+        skyGrad.addColorStop(0.4, '#4d0b28'); // Deep crimson
+        skyGrad.addColorStop(0.75, '#852113'); // Intense dark red
+        skyGrad.addColorStop(1, '#d47311'); // Hot desert sand orange
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Giant setting sun
+        ctx.fillStyle = '#f1c40f';
+        ctx.shadowBlur = 60;
+        ctx.shadowColor = '#d45500';
+        ctx.beginPath();
+        ctx.arc(canvas.width * 0.7, groundY - 5, 60, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset
+      }
+
+      // Layer 2: Parallax Sand Dunes (45% Speed)
+      if (chkLayer2.checked) {
+        ctx.fillStyle = '#3a0c0a'; // Burnt red-brown sand dune silhouette
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height);
+
+        const midOffset = (scrollX * 0.45) % canvas.width;
+        for (let t = 0; t <= 2; t++) {
+          const tileStart = t * canvas.width - midOffset;
+          for (let x = 0; x <= canvas.width; x += 20) {
+            const worldX = tileStart + x;
+            // Large sweeping desert dune curve
+            const y = Math.sin(worldX * 0.003) * 35 + groundY - 35;
+            ctx.lineTo(worldX, y);
+          }
+        }
+        ctx.lineTo(canvas.width * 2, canvas.height);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Layer 3: Foreground Desert Path & Cacti (100% Speed)
+      if (chkLayer3.checked) {
+        // Draw desert sandy ground
+        ctx.fillStyle = '#1c0402';
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+        
+        ctx.fillStyle = '#380a04';
+        ctx.fillRect(0, groundY, canvas.width, 3);
+
+        // Draw cacti silhouettes
+        ctx.fillStyle = '#100201';
+
+        const cactusSpacing = 220;
+        const foreOffset = scrollX % cactusSpacing;
+
+        for (let x = -cactusSpacing; x < canvas.width + cactusSpacing; x += cactusSpacing) {
+          const postX = x - foreOffset + 70;
+          
+          // Draw main trunk
+          ctx.fillRect(postX, groundY - 36, 6, 36);
+          // Draw left arm
+          ctx.fillRect(postX - 8, groundY - 26, 8, 5);
+          ctx.fillRect(postX - 8, groundY - 32, 5, 8);
+          // Draw right arm
+          ctx.fillRect(postX + 6, groundY - 20, 8, 5);
+          ctx.fillRect(postX + 9, groundY - 28, 5, 10);
+        }
+      }
+    }
+
+    // --- MAIN ANIMATION LOOP ---
+    function update(time) {
+      const dt = Math.min(0.1, (time - lastTime) / 1000);
+      lastTime = time;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Increment scroll offset
+      bgOffset += scrollSpeed * dt;
+
+      // Draw active environment
+      if (activeStage === 1) {
+        drawFarm(dt);
+      } else if (activeStage === 2) {
+        drawDeepSea(dt);
+      } else if (activeStage === 3) {
+        drawDesert(dt);
+      }
+
+      // Draw player baseline guidelines for context
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(50, groundY - 30, 24, 30);
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(50, groundY - 30, 24, 30);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '8px monospace';
+      ctx.fillText("Hero Spawn", 42, groundY - 35);
+
+      requestAnimationFrame(update);
+    }
+
+    requestAnimationFrame(update);
+  </script>
+</body>
+</html>

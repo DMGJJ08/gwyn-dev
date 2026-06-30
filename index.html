@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      const div = document.createElement('div');
+      div.style = 'position:fixed;top:0;left:0;width:100%;background:red;color:white;z-index:99999;padding:10px;font-family:monospace;font-size:12px;box-sizing:border-box;';
+      div.innerText = 'JS Error: ' + message + ' at ' + source + ':' + lineno;
+      document.body.appendChild(div);
+      return false;
+    };
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GWYN - Taskbar Idle RPG</title>
@@ -334,8 +343,14 @@
             <div class="inventory-container" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; height: 100%;">
               <!-- Left Side: Bag -->
               <div class="inventory-bag-section" style="border-right: 1px solid var(--border); padding-right: 15px;">
-                <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-wrap: wrap;">
                   <button class="bag-tab-btn active" data-bag-tab="bag-usable" style="background:none; border:none; color:var(--text-primary); font-weight:bold; cursor:pointer; font-size:12px;">Usables</button>
+                  <span style="color:var(--border);">|</span>
+                  <button class="bag-tab-btn" data-bag-tab="bag-weapon" style="background:none; border:none; color:var(--text-muted); font-weight:bold; cursor:pointer; font-size:12px;">Weapon</button>
+                  <span style="color:var(--border);">|</span>
+                  <button class="bag-tab-btn" data-bag-tab="bag-armor" style="background:none; border:none; color:var(--text-muted); font-weight:bold; cursor:pointer; font-size:12px;">Armor</button>
+                  <span style="color:var(--border);">|</span>
+                  <button class="bag-tab-btn" data-bag-tab="bag-material" style="background:none; border:none; color:var(--text-muted); font-weight:bold; cursor:pointer; font-size:12px;">Material</button>
                   <span style="color:var(--border);">|</span>
                   <button class="bag-tab-btn" data-bag-tab="bag-etc" style="background:none; border:none; color:var(--text-muted); font-weight:bold; cursor:pointer; font-size:12px;">Etc</button>
                 </div>
@@ -353,10 +368,25 @@
                     <span class="item-count" id="count-mp-potion" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">0</span>
                   </div>
                 </div>
+
+                <!-- Weapon Bag Grid -->
+                <div id="bag-weapon" class="bag-grid" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                  <!-- Dynamically populated -->
+                </div>
+
+                <!-- Armor Bag Grid -->
+                <div id="bag-armor" class="bag-grid" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                  <!-- Dynamically populated -->
+                </div>
+
+                <!-- Material Bag Grid -->
+                <div id="bag-material" class="bag-grid" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                  <!-- Dynamically populated -->
+                </div>
                 
                 <!-- Etc Bag Grid -->
                 <div id="bag-etc" class="bag-grid" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                  <div class="bag-slot" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                  <div class="bag-slot" data-item-name="VIP Coin" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
                     <span style="font-size: 20px;">🪙</span>
                     <span style="font-size: 10px; font-weight: bold; color: var(--gold);">VIP Coin</span>
                     <span class="item-count" id="count-vip-coin" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">0</span>
@@ -542,6 +572,7 @@
       </div>
     </div>
 
+
     <!-- Start Overlay (Modal) -->
     <div id="start-overlay" class="overlay show">
       <div class="overlay-content-wrapper">
@@ -644,7 +675,7 @@
     </div>
 
     <!-- Main Menu Overlay -->
-    <div id="main-menu-overlay" class="overlay show" style="z-index: 1000; background: #07080c; overflow: hidden; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+    <div id="main-menu-overlay" class="overlay" style="z-index: 1000; background: #07080c; overflow: hidden; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
       <!-- Canvas for background animated particles -->
       <canvas id="main-menu-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
       
@@ -699,9 +730,27 @@
   </div>
 
   <!-- Game Scripts -->
-  <script src="src/auth.js?v=4.0"></script>
-  <script src="src/entities.js?v=4.0"></script>
-  <script src="src/game.js?v=4.0"></script>
-  <script src="src/main.js?v=4.0"></script>
+  <script src="src/auth.js?v=4.1?v=4.1"></script>
+  <script src="src/entities.js?v=4.1?v=4.1"></script>
+  
+  <!-- Enemy Definition Files -->
+  <script src="enemyfile/Furious Chicken.js"></script>
+  <script src="enemyfile/Wild Pig.js"></script>
+  <script src="enemyfile/Rambunctious Sheep.js"></script>
+  <script src="enemyfile/Electric Jellyfish.js"></script>
+  <script src="enemyfile/Armored Crab.js"></script>
+  <script src="enemyfile/Bubble Seahorse.js"></script>
+  <script src="enemyfile/Hunter Shark.js"></script>
+  <script src="enemyfile/Poison Scorpion.js"></script>
+  <script src="enemyfile/Golden Cobra.js"></script>
+  <script src="enemyfile/Risen Mummy.js"></script>
+  <script src="enemyfile/Desert Spider.js"></script>
+  <script src="enemyfile/Sand Minion.js"></script>
+  <script src="enemyfile/Giant Angry Bull.js"></script>
+  <script src="enemyfile/Deepwater Kraken.js"></script>
+  <script src="enemyfile/Pharaoh Mummy.js"></script>
+
+  <script src="src/game.js?v=4.1?v=4.1"></script>
+  <script src="src/main.js?v=4.1?v=4.1"></script>
 </body>
 </html>

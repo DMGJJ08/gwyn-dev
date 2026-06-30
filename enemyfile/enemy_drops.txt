@@ -1,0 +1,139 @@
+﻿GWYN ENEMY DROP RATES AND ITEMS LIST
+====================================
+
+Enemy: Furious Chicken (Type: chicken, Stage: 1)
+-----------------------------------------------------
+  - 90.00% Drop: Furious Chicken Feather
+  - 20.00% Drop: Furious Chicken Egg
+  -  5.00% Drop: Furious Chicken Beak
+  -  3.00% Drop: Furious Chicken Talon
+  -  0.08% Drop: Furious Chicken Crest
+  -  0.02% Drop: Furious Chicken Card
+
+Enemy: Wild Pig (Type: pig, Stage: 1)
+-----------------------------------------------------
+  - 90.00% Drop: Wild Pig Pork
+  - 20.00% Drop: Wild Pig Hide
+  -  5.00% Drop: Wild Pig Snout
+  -  3.00% Drop: Wild Pig Tusk
+  -  0.08% Drop: Wild Pig Hoof
+  -  0.02% Drop: Wild Pig Card
+
+Enemy: Rambunctious Sheep (Type: sheep, Stage: 1)
+-----------------------------------------------------
+  - 90.00% Drop: Rambunctious Sheep Wool
+  - 20.00% Drop: Rambunctious Sheep Milk
+  -  5.00% Drop: Rambunctious Sheep Horn
+  -  3.00% Drop: Rambunctious Sheep Fleece
+  -  0.08% Drop: Rambunctious Sheep Bell
+  -  0.02% Drop: Rambunctious Sheep Card
+
+Enemy: Electric Jellyfish (Type: jellyfish, Stage: 2)
+-----------------------------------------------------
+  - 90.00% Drop: Electric Jellyfish Tentacle
+  - 20.00% Drop: Electric Jellyfish Slime
+  -  5.00% Drop: Electric Jellyfish Glow-cap
+  -  3.00% Drop: Electric Jellyfish Stinger
+  -  0.08% Drop: Electric Jellyfish Core
+  -  0.02% Drop: Electric Jellyfish Card
+
+Enemy: Armored Crab (Type: crab, Stage: 2)
+-----------------------------------------------------
+  - 90.00% Drop: Armored Crab Shell
+  - 20.00% Drop: Armored Crab Meat
+  -  5.00% Drop: Armored Crab Claw
+  -  3.00% Drop: Armored Crab Pincer
+  -  0.08% Drop: Armored Crab Carapace
+  -  0.02% Drop: Armored Crab Card
+
+Enemy: Bubble Seahorse (Type: seahorse, Stage: 2)
+-----------------------------------------------------
+  - 90.00% Drop: Bubble Seahorse Fin
+  - 20.00% Drop: Bubble Seahorse Scale
+  -  5.00% Drop: Bubble Seahorse Snout
+  -  3.00% Drop: Bubble Seahorse Coral
+  -  0.08% Drop: Bubble Seahorse Crown
+  -  0.02% Drop: Bubble Seahorse Card
+
+Enemy: Hunter Shark (Type: shark, Stage: 2)
+-----------------------------------------------------
+  - 90.00% Drop: Hunter Shark Tooth
+  - 20.00% Drop: Hunter Shark Fin
+  -  5.00% Drop: Hunter Shark Skin
+  -  3.00% Drop: Hunter Shark Cartilage
+  -  0.08% Drop: Hunter Shark Jaw
+  -  0.02% Drop: Hunter Shark Card
+
+Enemy: Poison Scorpion (Type: scorpion, Stage: 3)
+-----------------------------------------------------
+  - 90.00% Drop: Poison Scorpion Chitin
+  - 20.00% Drop: Poison Scorpion Venom
+  -  5.00% Drop: Poison Scorpion Stinger
+  -  3.00% Drop: Poison Scorpion Pincer
+  -  0.08% Drop: Poison Scorpion Carapace
+  -  0.02% Drop: Poison Scorpion Card
+
+Enemy: Golden Cobra (Type: cobra, Stage: 3)
+-----------------------------------------------------
+  - 90.00% Drop: Golden Cobra Scale
+  - 20.00% Drop: Golden Cobra Venom
+  -  5.00% Drop: Golden Cobra Skin
+  -  3.00% Drop: Golden Cobra Fang
+  -  0.08% Drop: Golden Cobra Hood
+  -  0.02% Drop: Golden Cobra Card
+
+Enemy: Risen Mummy (Type: mummy, Stage: 3)
+-----------------------------------------------------
+  - 90.00% Drop: Risen Mummy Bandage
+  - 20.00% Drop: Risen Mummy Dust
+  -  5.00% Drop: Risen Mummy Wrap
+  -  3.00% Drop: Risen Mummy Amulet
+  -  0.08% Drop: Risen Mummy Heart
+  -  0.02% Drop: Risen Mummy Card
+
+Enemy: Desert Spider (Type: spider, Stage: 3)
+-----------------------------------------------------
+  - 90.00% Drop: Desert Spider Silk
+  - 20.00% Drop: Desert Spider Venom
+  -  5.00% Drop: Desert Spider Spinneret
+  -  3.00% Drop: Desert Spider Leg
+  -  0.08% Drop: Desert Spider Mandible
+  -  0.02% Drop: Desert Spider Card
+
+Enemy: Sand Minion (Type: mummy, Stage: 3)
+-----------------------------------------------------
+  - 90.00% Drop: Sand Minion Sand
+  - 20.00% Drop: Sand Minion Shard
+  -  5.00% Drop: Sand Minion Bandage
+  -  3.00% Drop: Sand Minion Core
+  -  0.08% Drop: Sand Minion Mask
+  -  0.02% Drop: Sand Minion Card
+
+Enemy: Giant Angry Bull (Type: boss, Stage: 1)
+-----------------------------------------------------
+  - 90.00% Drop: Giant Angry Bull Hide
+  - 20.00% Drop: Giant Angry Bull Beef
+  -  5.00% Drop: Giant Angry Bull Horn
+  -  3.00% Drop: Giant Angry Bull Hoof
+  -  0.08% Drop: Giant Angry Bull Nose Ring
+  -  0.02% Drop: Giant Angry Bull Card
+
+Enemy: Deepwater Kraken (Type: boss, Stage: 2)
+-----------------------------------------------------
+  - 90.00% Drop: Deepwater Kraken Ink
+  - 20.00% Drop: Deepwater Kraken Tentacle
+  -  5.00% Drop: Deepwater Kraken Suction Cup
+  -  3.00% Drop: Deepwater Kraken Eye
+  -  0.08% Drop: Deepwater Kraken Beak
+  -  0.02% Drop: Deepwater Kraken Card
+
+Enemy: Pharaoh Mummy (Type: boss, Stage: 3)
+-----------------------------------------------------
+  - 90.00% Drop: Pharaoh Mummy Shroud
+  - 20.00% Drop: Pharaoh Mummy Relic
+  -  5.00% Drop: Pharaoh Mummy Scarab
+  -  3.00% Drop: Pharaoh Mummy Canopic Jar
+  -  0.08% Drop: Pharaoh Mummy Crook and Flail
+  -  0.02% Drop: Pharaoh Mummy Card
+
+

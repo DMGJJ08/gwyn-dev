@@ -19,6 +19,165 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnStart = document.getElementById('btn-start-game');
   const startOverlay = document.getElementById('start-overlay');
   
+  // Create and append a modern, sleek tooltip element dynamically
+  const tooltip = document.createElement('div');
+  tooltip.id = 'game-tooltip';
+  tooltip.style.cssText = `
+    position: fixed;
+    display: none;
+    pointer-events: none;
+    z-index: 10000;
+    background: rgba(10, 11, 18, 0.95);
+    border: 1px solid var(--accent, #b388ff);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: "Outfit", sans-serif;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(179, 136, 255, 0.15);
+    max-width: 250px;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    opacity: 0;
+    transform: scale(0.95);
+  `;
+  document.body.appendChild(tooltip);
+
+  function positionTooltip(e) {
+    const offset = 12;
+    let x = e.clientX + offset;
+    let y = e.clientY + offset;
+    
+    const tooltipWidth = tooltip.offsetWidth;
+    const tooltipHeight = tooltip.offsetHeight;
+    
+    if (x + tooltipWidth > window.innerWidth) {
+      x = e.clientX - tooltipWidth - offset;
+    }
+    if (y + tooltipHeight > window.innerHeight) {
+      y = e.clientY - tooltipHeight - offset;
+    }
+    
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  }
+
+  function showTooltip(e, itemName) {
+    let title = itemName;
+    let desc = "No description available.";
+    let tag = "Item";
+    let recipe = "";
+    
+    if (itemName.endsWith(" Card")) {
+      const enemyName = itemName.replace(" Card", "");
+      title = itemName;
+      tag = "Monster Card";
+      desc = `A rare collectible card representing the ${enemyName}. Highly prized by hunters and scholars alike.`;
+    } else if (itemName.includes("(Lvl")) {
+      title = itemName;
+      tag = itemName.includes("Shield") || itemName.includes("Armor") || itemName.includes("Plate") || itemName.includes("Cloak") || itemName.includes("Jerkin") || itemName.includes("Vest") || itemName.includes("Robe") || itemName.includes("Garb") || itemName.includes("Shroud") ? "Equipped Armor" : "Equipped Weapon";
+      desc = `Your current equipped combat gear. Increases your basic battle statistics.`;
+    } else if (window.materialDatabase && window.materialDatabase[itemName]) {
+      const dbItem = window.materialDatabase[itemName];
+      desc = dbItem.desc;
+      tag = dbItem.tag;
+      if (dbItem.recipe) {
+        recipe = dbItem.recipe;
+      }
+    } else if (itemName === "HP Potion") {
+      tag = "Consumable";
+      desc = "Restores 50 Health points immediately. Essential for surviving harsh battles.";
+    } else if (itemName === "MP Potion") {
+      tag = "Consumable";
+      desc = "Restores 30 Mana points immediately. Required for casting powerful spells.";
+    } else if (itemName === "VIP Coin") {
+      title = "VIP Coin";
+      tag = "Special Item";
+      desc = "A rare golden token that activates premium auto-combat privileges.";
+    }
+    
+    let tagColor = "#adb5bd";
+    if (tag === "Cooking Material") {
+      tagColor = "#51cf66";
+    } else if (tag === "Sellable") {
+      tagColor = "#fcc419";
+    } else if (tag === "Monster Card") {
+      tagColor = "#b388ff";
+    } else if (tag.includes("Equipped")) {
+      tagColor = "#4dabf7";
+    } else if (tag === "Consumable") {
+      tagColor = "#ff6b6b";
+    } else if (tag === "Special Item") {
+      tagColor = "#ff922b";
+    }
+    
+    let tooltipHtml = `
+      <div style="font-weight: 800; font-size: 13px; color: #fff; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px;">${title}</div>
+      <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: ${tagColor}; margin-bottom: 6px; letter-spacing: 0.5px;">${tag}</div>
+      <div style="font-size: 11px; color: #ced4da; line-height: 1.4; margin-bottom: ${recipe ? '6px' : '0'};">${desc}</div>
+    `;
+    
+    if (recipe) {
+      tooltipHtml += `
+        <div style="border-top: 1px dashed rgba(81, 207, 102, 0.3); margin-top: 6px; padding-top: 5px;">
+          <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #51cf66; margin-bottom: 2px;">Possible Combination:</div>
+          <div style="font-size: 10px; color: #a9e34b; font-style: italic; line-height: 1.3;">${recipe}</div>
+        </div>
+      `;
+    }
+    
+    tooltip.innerHTML = tooltipHtml;
+    tooltip.style.display = 'block';
+    
+    positionTooltip(e);
+    
+    requestAnimationFrame(() => {
+      tooltip.style.opacity = '1';
+      tooltip.style.transform = 'scale(1)';
+    });
+  }
+
+  function hideTooltip() {
+    tooltip.style.opacity = '0';
+    tooltip.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      if (tooltip.style.opacity === '0') {
+        tooltip.style.display = 'none';
+      }
+    }, 150);
+  }
+
+  // Set up Event Delegation for all inventory tab containers
+  const bagContainers = [
+    document.getElementById('bag-usable'),
+    document.getElementById('bag-weapon'),
+    document.getElementById('bag-armor'),
+    document.getElementById('bag-material'),
+    document.getElementById('bag-etc')
+  ];
+
+  bagContainers.forEach(container => {
+    if (!container) return;
+    
+    container.addEventListener('mouseover', (e) => {
+      const slot = e.target.closest('.bag-slot');
+      if (!slot) return;
+      
+      const itemName = slot.getAttribute('data-item-name');
+      if (!itemName) return;
+      
+      showTooltip(e, itemName);
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+      if (tooltip.style.display === 'block') {
+        positionTooltip(e);
+      }
+    });
+    
+    container.addEventListener('mouseout', (e) => {
+      hideTooltip();
+    });
+  });
+  
   const gameoverOverlay = document.getElementById('gameover-overlay');
   const btnRespawn = document.getElementById('btn-respawn');
   
@@ -426,16 +585,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- INVENTORY BAG SUB-TABS ---
   const bagTabButtons = document.querySelectorAll('.bag-tab-btn');
+  const bagGrids = document.querySelectorAll('.bag-grid');
   bagTabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       bagTabButtons.forEach(b => {
         b.classList.remove('active');
+        b.style.color = 'var(--text-muted)';
       });
       btn.classList.add('active');
+      btn.style.color = 'var(--text-primary)';
       
       const targetBag = btn.getAttribute('data-bag-tab');
-      document.getElementById('bag-usable').style.display = targetBag === 'bag-usable' ? 'grid' : 'none';
-      document.getElementById('bag-etc').style.display = targetBag === 'bag-etc' ? 'grid' : 'none';
+      bagGrids.forEach(grid => {
+        grid.style.display = grid.id === targetBag ? 'grid' : 'none';
+      });
     });
   });
 
@@ -730,10 +893,171 @@ document.addEventListener('DOMContentLoaded', () => {
     uiXpFill.style.width = `${xpRatio * 100}%`;
     uiXpText.textContent = `${Math.floor(xpRatio * 100)}%`;
     
-    // Update inventory counts
-    document.getElementById('count-hp-potion').textContent = player.inventory.usable.hp_potion;
-    document.getElementById('count-mp-potion').textContent = player.inventory.usable.mp_potion;
-    document.getElementById('count-vip-coin').textContent = player.inventory.etc.vip2coin;
+    // Update usable items grid dynamically (max 999 per slot)
+    const usableGrid = document.getElementById('bag-usable');
+    if (usableGrid) {
+      usableGrid.innerHTML = '';
+      const usableItems = [
+        { id: 'hp_potion', name: 'HP Pot', emoji: '🧪', color: 'var(--health)', count: player.inventory.usable.hp_potion, filter: 'hue-rotate(240deg) saturate(1.5)' },
+        { id: 'mp_potion', name: 'MP Pot', emoji: '🧪', color: 'hsl(210, 80%, 65%)', count: player.inventory.usable.mp_potion, filter: 'hue-rotate(120deg) saturate(1.5)' }
+      ];
+      
+      usableItems.forEach(item => {
+        let remaining = item.count;
+        if (remaining <= 0) {
+          remaining = 0;
+        }
+        
+        do {
+          const countToShow = Math.min(remaining, 999);
+          const slot = document.createElement('div');
+          slot.className = 'bag-slot item-usable';
+          slot.setAttribute('data-item-id', item.id);
+          slot.setAttribute('data-item-name', item.id === 'hp_potion' ? 'HP Potion' : 'MP Potion');
+          slot.setAttribute('draggable', 'true');
+          slot.style = 'background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; cursor: grab;';
+          slot.innerHTML = `
+            <span style="font-size: 20px; filter: ${item.filter};">${item.emoji}</span>
+            <span style="font-size: 10px; font-weight: bold; color: ${item.color};">${item.name}</span>
+            <span class="item-count" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">${countToShow}</span>
+          `;
+          
+          slot.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', item.id);
+          });
+          
+          slot.addEventListener('click', () => {
+            if (item.id === 'hp_potion') {
+              window.assignedHpItem = 'hp_potion';
+              if (window.assignedMpItem === 'hp_potion') window.assignedMpItem = null;
+            } else {
+              window.assignedMpItem = 'mp_potion';
+              if (window.assignedHpItem === 'mp_potion') window.assignedHpItem = null;
+            }
+            updateAssignedSlotVisuals();
+            saveGameData();
+          });
+          
+          usableGrid.appendChild(slot);
+          
+          remaining -= countToShow;
+        } while (remaining > 0);
+      });
+    }
+
+    // Update VIP coin count
+    const countVipCoin = document.getElementById('count-vip-coin');
+    if (countVipCoin) {
+      countVipCoin.textContent = player.inventory.etc.vip2coin;
+    }
+
+    function getWeaponName(className, level) {
+      const weapons = {
+        Warrior: ["Wooden Sword", "Bronze Blade", "Iron Greatsword", "Steel Claymore", "Mythril Blade", "Excalibur"],
+        Archer: ["Short Bow", "Recurve Bow", "Composite Bow", "Crossbow", "Hunter Bow", "Artemis Bow"],
+        Mage: ["Wooden Staff", "Apprentice Wand", "Ruby Scepter", "Wizard Staff", "Archmage Wand", "Staff of Wisdom"]
+      };
+      const list = weapons[className] || weapons["Warrior"];
+      const idx = Math.min(level - 1, list.length - 1);
+      return `${list[idx]} (Lvl ${level})`;
+    }
+    function getArmorName(className, level) {
+      const armors = {
+        Warrior: ["Cloth Robe", "Leather Vest", "Bronze Plate", "Iron Carapace", "Steel Plate", "Dragon Armor"],
+        Archer: ["Tattered Cloak", "Leather Jerkin", "Reinforced Vest", "Hunter Mail", "Elven Cloak", "Shadow Garb"],
+        Mage: ["Apprentice Robe", "Silk Vestment", "Mage Robe", "Sorcerer Cloak", "Mystic Shroud", "Astral Robe"]
+      };
+      const list = armors[className] || armors["Warrior"];
+      const idx = Math.min(level - 1, list.length - 1);
+      return `${list[idx]} (Lvl ${level})`;
+    }
+
+    // Update weapon grid
+    const weaponGrid = document.getElementById('bag-weapon');
+    if (weaponGrid) {
+      weaponGrid.innerHTML = '';
+      const wName = getWeaponName(player.className, player.upgrades.weapon);
+      const wIcon = player.className === 'Archer' ? '🏹' : (player.className === 'Mage' ? '🪄' : '⚔️');
+      weaponGrid.innerHTML = `
+        <div class="bag-slot" data-item-name="${wName}" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+          <span style="font-size: 20px;">${wIcon}</span>
+          <span style="font-size: 10px; font-weight: bold; color: var(--accent-light); text-align: center; padding: 0 4px; line-height: 1.1; margin-top: 4px;">${wName}</span>
+          <span class="item-count" style="position: absolute; bottom: 4px; right: 6px; font-size: 9px; background: rgba(184,134,11,0.25); border: 1px solid rgba(184,134,11,0.4); padding: 1px 4px; border-radius: 4px; font-weight: bold; color: var(--gold);">EQUIPPED</span>
+        </div>
+      `;
+    }
+
+    // Update armor grid
+    const armorGrid = document.getElementById('bag-armor');
+    if (armorGrid) {
+      armorGrid.innerHTML = '';
+      const aName = getArmorName(player.className, player.upgrades.armor);
+      const aIcon = '🛡️';
+      armorGrid.innerHTML = `
+        <div class="bag-slot" data-item-name="${aName}" style="background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+          <span style="font-size: 20px;">${aIcon}</span>
+          <span style="font-size: 10px; font-weight: bold; color: var(--accent-light); text-align: center; padding: 0 4px; line-height: 1.1; margin-top: 4px;">${aName}</span>
+          <span class="item-count" style="position: absolute; bottom: 4px; right: 6px; font-size: 9px; background: rgba(184,134,11,0.25); border: 1px solid rgba(184,134,11,0.4); padding: 1px 4px; border-radius: 4px; font-weight: bold; color: var(--gold);">EQUIPPED</span>
+        </div>
+      `;
+    }
+
+    // Update material grid dynamically (max 999 per slot)
+    const materialGrid = document.getElementById('bag-material');
+    if (materialGrid) {
+      materialGrid.innerHTML = '';
+      const mats = player.inventory.material || {};
+      const matNames = Object.keys(mats).filter(k => mats[k] > 0);
+      if (matNames.length === 0) {
+        materialGrid.innerHTML = `
+          <div style="grid-column: span 4; text-align: center; color: var(--text-muted); font-size: 11px; padding: 20px 0;">No materials collected.</div>
+        `;
+      } else {
+        matNames.forEach(name => {
+          let remaining = mats[name];
+          do {
+            const countToShow = Math.min(remaining, 999);
+            const slot = document.createElement('div');
+            
+            if (name.endsWith(" Card")) {
+              const enemyName = name.replace(" Card", "");
+              slot.className = 'bag-slot';
+              slot.setAttribute('data-item-name', name);
+              slot.style = 'background: linear-gradient(135deg, #1f122e 0%, #0d0614 100%); border: 2px solid #b388ff; border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 8px rgba(179, 136, 255, 0.4), 0 4px 10px rgba(0,0,0,0.5); cursor: grab;';
+              slot.innerHTML = `
+                <div class="card-bg" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 4px 0;">
+                  <div style="position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; border: 1px solid rgba(179, 136, 255, 0.25); border-radius: 6px; pointer-events: none;"></div>
+                  <canvas class="card-enemy-canvas" width="64" height="64" data-enemy="${enemyName}" style="width: 38px; height: 38px; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));"></canvas>
+                  <span style="font-size: 7px; font-weight: 800; color: #d1c4e9; text-align: center; padding: 0 4px; line-height: 1.1; margin-top: 3px; z-index: 2; text-transform: uppercase; letter-spacing: 0.5px;">${name}</span>
+                  <span class="item-count" style="position: absolute; bottom: 4px; right: 6px; font-size: 9px; background: rgba(179, 136, 255, 0.85); padding: 1px 4px; border-radius: 4px; font-weight: bold; color: #110022; z-index: 3; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">${countToShow}</span>
+                </div>
+              `;
+              
+              setTimeout(() => {
+                const canvas = slot.querySelector('.card-enemy-canvas');
+                if (canvas) {
+                  window.drawEnemyCardSprite(canvas, enemyName);
+                }
+              }, 0);
+            } else {
+              const svgContent = window.getDropSVG(name);
+              slot.className = 'bag-slot';
+              slot.setAttribute('data-item-name', name);
+              slot.style = 'background-color: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;';
+              slot.innerHTML = `
+                <div class="drop-icon-container" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+                  ${svgContent}
+                </div>
+                <span style="font-size: 8px; font-weight: bold; color: var(--text-secondary); text-align: center; padding: 0 4px; line-height: 1.1; margin-top: 2px;">${name}</span>
+                <span class="item-count" style="position: absolute; bottom: 4px; right: 6px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; font-weight: bold;">${countToShow}</span>
+              `;
+            }
+            materialGrid.appendChild(slot);
+            remaining -= countToShow;
+          } while (remaining > 0);
+        });
+      }
+    }
     
     // Update VIP Auto-Heal visibility/active state
     const hasVip = player.inventory.etc.vip2coin > 0;

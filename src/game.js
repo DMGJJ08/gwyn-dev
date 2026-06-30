@@ -172,6 +172,20 @@ class GameEngine {
     this.farmSky.onload = () => { this.farmSkyLoaded = true; };
     this.farmMid.onload = () => { this.farmMidLoaded = true; };
     this.farmFore.onload = () => { this.farmForeLoaded = true; };
+
+    // Specific Farm Daytime assets
+    this.farmSky = new Image();
+    this.farmMid = new Image();
+    this.farmFore = new Image();
+    this.farmSky.src = 'assets/farm_sky_day.png';
+    this.farmMid.src = 'assets/farm_mid_day.png';
+    this.farmFore.src = 'assets/farm_fore_day.png';
+    this.farmSkyLoaded = false;
+    this.farmMidLoaded = false;
+    this.farmForeLoaded = false;
+    this.farmSky.onload = () => { this.farmSkyLoaded = true; };
+    this.farmMid.onload = () => { this.farmMidLoaded = true; };
+    this.farmFore.onload = () => { this.farmForeLoaded = true; };
   }
   
   setGroundY(height) {
@@ -243,49 +257,54 @@ class GameEngine {
     if (this.activeLevel === 5) {
       // Spawn Boss
       this.bossSpawned = true;
-      if (this.activeStage === 1) {
-        this.enemies.push(new Boss("Giant Angry Bull", 1, 350, 45, 14, 150, 100));
-      } else if (this.activeStage === 2) {
-        this.enemies.push(new Boss("Deepwater Kraken", 2, 850, 35, 25, 400, 300));
-      } else if (this.activeStage === 3) {
-        this.enemies.push(new Boss("Pharaoh Mummy", 3, 1800, 25, 42, 1000, 800));
+      let bossName = "";
+      if (this.activeStage === 1) bossName = "Giant Angry Bull";
+      else if (this.activeStage === 2) bossName = "Deepwater Kraken";
+      else if (this.activeStage === 3) bossName = "Pharaoh Mummy";
+      
+      const config = window.enemyRegistry[bossName];
+      if (config) {
+        this.enemies.push(new Boss(
+          config.name,
+          config.stage,
+          config.hpFormula(0),
+          config.speed,
+          config.damageFormula(0),
+          config.xpReward,
+          config.goldRewardFormula(0)
+        ));
       }
     } else {
-      // Spawn Normal Enemies based on stage and level
+      // Spawn Normal Enemies based on stage and level from registry
       const lvlOffset = this.activeLevel;
+      let pool = [];
       if (this.activeStage === 1) {
-        const types = ['chicken', 'pig', 'sheep'];
-        const rType = types[Math.floor(Math.random() * types.length)];
-        if (rType === 'chicken') {
-          this.enemies.push(new Enemy("Furious Chicken", "chicken", 1, this.activeLevel, 25 + lvlOffset * 4, 95, 4 + lvlOffset, 12, 5 + lvlOffset));
-        } else if (rType === 'pig') {
-          this.enemies.push(new Enemy("Wild Pig", "pig", 1, this.activeLevel, 45 + lvlOffset * 6, 45, 8 + lvlOffset * 2, 18, 9 + lvlOffset * 2));
-        } else {
-          this.enemies.push(new Enemy("Rambunctious Sheep", "sheep", 1, this.activeLevel, 70 + lvlOffset * 8, 32, 6 + lvlOffset, 25, 15 + lvlOffset * 3));
-        }
+        pool = ["Furious Chicken", "Wild Pig", "Rambunctious Sheep"];
       } else if (this.activeStage === 2) {
-        const types = ['jellyfish', 'crab', 'seahorse', 'shark'];
-        const rType = types[Math.floor(Math.random() * types.length)];
-        if (rType === 'jellyfish') {
-          this.enemies.push(new Enemy("Electric Jellyfish", "jellyfish", 2, this.activeLevel, 65 + lvlOffset * 8, 40, 12 + lvlOffset, 30, 14 + lvlOffset * 2));
-        } else if (rType === 'crab') {
-          this.enemies.push(new Enemy("Armored Crab", "crab", 2, this.activeLevel, 110 + lvlOffset * 12, 50, 15 + lvlOffset * 2, 38, 18 + lvlOffset * 3));
-        } else if (rType === 'seahorse') {
-          this.enemies.push(new Enemy("Bubble Seahorse", "seahorse", 2, this.activeLevel, 85 + lvlOffset * 9, 55, 10 + lvlOffset, 32, 16 + lvlOffset * 2));
-        } else {
-          this.enemies.push(new Enemy("Hunter Shark", "shark", 2, this.activeLevel, 140 + lvlOffset * 15, 75, 20 + lvlOffset * 3, 55, 30 + lvlOffset * 4));
-        }
+        pool = ["Electric Jellyfish", "Armored Crab", "Bubble Seahorse", "Hunter Shark"];
       } else if (this.activeStage === 3) {
-        const types = ['scorpion', 'cobra', 'mummy', 'spider'];
-        const rType = types[Math.floor(Math.random() * types.length)];
-        if (rType === 'scorpion') {
-          this.enemies.push(new Enemy("Poison Scorpion", "scorpion", 3, this.activeLevel, 130 + lvlOffset * 16, 70, 24 + lvlOffset * 2, 60, 32 + lvlOffset * 3));
-        } else if (rType === 'cobra') {
-          this.enemies.push(new Enemy("Golden Cobra", "cobra", 3, this.activeLevel, 150 + lvlOffset * 14, 85, 28 + lvlOffset * 2, 72, 40 + lvlOffset * 4));
-        } else if (rType === 'mummy') {
-          this.enemies.push(new Enemy("Risen Mummy", "mummy", 3, this.activeLevel, 250 + lvlOffset * 22, 40, 22 + lvlOffset, 85, 48 + lvlOffset * 4, 1.3));
-        } else if (rType === 'spider') {
-          this.enemies.push(new Enemy("Desert Spider", "spider", 3, this.activeLevel, 110 + lvlOffset * 14, 80, 18 + lvlOffset * 2, 50, 28 + lvlOffset * 3, 1.1));
+        pool = ["Poison Scorpion", "Golden Cobra", "Risen Mummy", "Desert Spider"];
+      }
+      
+      if (pool.length > 0) {
+        const name = pool[Math.floor(Math.random() * pool.length)];
+        const config = window.enemyRegistry[name];
+        if (config) {
+          const hp = config.hpFormula(lvlOffset);
+          const damage = config.damageFormula(lvlOffset);
+          const goldReward = config.goldRewardFormula(lvlOffset);
+          this.enemies.push(new Enemy(
+            config.name,
+            config.type,
+            config.stage,
+            lvlOffset,
+            hp,
+            config.speed,
+            damage,
+            config.xpReward,
+            goldReward,
+            config.sizeMultiplier
+          ));
         }
       }
     }
@@ -295,12 +314,40 @@ class GameEngine {
   spawnPharaohMinions() {
     // Spawn 2 sand mummies slightly in front of Pharaoh
     const pX = this.enemies[0] ? this.enemies[0].x : 700;
-    this.enemies.push(new Enemy("Sand Minion", "mummy", 3, 5, 60, 45, 14, 0, 0, 1.1));
-    this.enemies.push(new Enemy("Sand Minion", "mummy", 3, 5, 60, 45, 14, 0, 0, 1.1));
+    const config = window.enemyRegistry["Sand Minion"];
+    if (config) {
+      const hp = config.hpFormula(5);
+      const damage = config.damageFormula(5);
+      const goldReward = config.goldRewardFormula(5);
+      this.enemies.push(new Enemy(
+        config.name,
+        config.type,
+        config.stage,
+        5,
+        hp,
+        config.speed,
+        damage,
+        config.xpReward,
+        goldReward,
+        config.sizeMultiplier
+      ));
+      this.enemies.push(new Enemy(
+        config.name,
+        config.type,
+        config.stage,
+        5,
+        hp,
+        config.speed,
+        damage,
+        config.xpReward,
+        goldReward,
+        config.sizeMultiplier
+      ));
+    }
     
     // Offset the X coords slightly so they don't overlap perfectly
-    this.enemies[this.enemies.length - 1].x = pX - 30;
-    this.enemies[this.enemies.length - 2].x = pX - 60;
+    if (this.enemies[this.enemies.length - 1]) this.enemies[this.enemies.length - 1].x = pX - 30;
+    if (this.enemies[this.enemies.length - 2]) this.enemies[this.enemies.length - 2].x = pX - 60;
   }
   
   gameLoop(timestamp) {
@@ -383,6 +430,10 @@ class GameEngine {
         // Grant rewards
         this.player.gainGold(enemy.goldReward, this.particles);
         this.player.gainXp(enemy.xpReward, this.particles);
+        
+        // Roll for item drops
+        this.rollEnemyDrops(enemy);
+        
         this.triggerScreenShake(4, 0.15); // Hit screen shake
         
         this.enemiesKilledInLevel++;
@@ -435,6 +486,19 @@ class GameEngine {
       }
     }
   }
+
+  rollEnemyDrops(enemy) {
+    const config = window.enemyRegistry[enemy.name];
+    if (config && config.drops) {
+      config.drops.forEach(drop => {
+        const roll = Math.random();
+        if (roll <= drop.chance) {
+          this.player.gainMaterial(drop.item, this.particles);
+        }
+      });
+    }
+  }
+
   
   handleLevelClear() {
     // Success particle burst
@@ -641,7 +705,7 @@ class GameEngine {
         const imgScrollX = (scrollX * 0.5) % this.width;
         const startTileIndex = Math.floor(imgScrollX / this.width);
         
-        const yPos = groundY - this.width * 0.525;
+        const yPos = groundY - this.width * 0.55;
         const drawH = this.width;
         
         const x1 = startTileIndex * this.width - imgScrollX;
@@ -706,7 +770,13 @@ class GameEngine {
         const img = this.farmFore;
         const imgScrollX = (scrollX * 1.0) % this.width;
         const startTileIndex = Math.floor(imgScrollX / this.width);
-        const drawH = this.height - groundY;
+        
+        // Compress path/foreground vertically to 80px
+        const drawH = 80;
+        
+        // Draw bottom solid dirt base to fill up canvas height
+        this.ctx.fillStyle = '#3a210f';
+        this.ctx.fillRect(0, groundY + drawH - 5, this.width, this.height - (groundY + drawH - 5));
         
         const x1 = startTileIndex * this.width - imgScrollX;
         const isFlipped1 = (startTileIndex % 2 !== 0);

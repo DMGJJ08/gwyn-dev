@@ -3,6 +3,209 @@
 // Global Ground Y coordinate (updated dynamically in game.js)
 let groundY = 160;
 
+// Dynamic SVG Generator for Enemy Drops (Related to drop name, no background)
+window.getDropSVG = function(name) {
+  let color = "#fff";
+  let path = "";
+  
+  if (name.includes("Feather")) {
+    color = "#e0f0ff";
+    path = `<path d="M6,26 C6,26 12,20 18,12 C20,9 23,4 26,2 C26,2 25,6 23,10 C18,18 10,24 10,24 L10,28 L6,26 Z" fill="${color}" stroke="#000" stroke-width="1.5"/><path d="M10,24 C14,21 21,14 26,2 C21,8 14,17 10,24 Z" fill="none" stroke="#fff" stroke-width="1"/>`;
+  } else if (name.includes("Egg")) {
+    color = "#fff5e0";
+    path = `<ellipse cx="16" cy="17" rx="9" ry="12" fill="${color}" stroke="#000" stroke-width="1.5"/><path d="M12,14 C12,14 14,10 16,10 C18,10 19,13 19,13" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>`;
+  } else if (name.includes("Pork") || name.includes("Meat") || name.includes("Beef")) {
+    color = "#ff6b6b";
+    path = `<path d="M8,18 C6,12 12,6 18,8 C24,10 26,16 24,22 C22,28 14,26 8,18 Z" fill="${color}" stroke="#000" stroke-width="1.5"/><path d="M12,12 C14,10 18,12 18,14 C18,16 14,18 12,18 C10,18 10,14 12,12 Z" fill="#fff" opacity="0.8"/>`;
+  } else if (name.includes("Hide") || name.includes("Skin") || name.includes("Fleece") || name.includes("Wool")) {
+    color = "#d2b48c";
+    path = `<path d="M6,10 C4,16 4,22 8,26 C12,24 14,28 18,28 C22,28 24,24 28,26 C28,20 28,14 24,10 C20,12 18,8 14,8 C10,8 8,12 6,10 Z" fill="${color}" stroke="#000" stroke-width="1.5"/>`;
+  } else if (name.includes("Talon") || name.includes("Claw") || name.includes("Pincer") || name.includes("Snout") || name.includes("Tooth") || name.includes("Horn") || name.includes("Stinger") || name.includes("Fang") || name.includes("Beak")) {
+    color = "#f4f0e6";
+    path = `<path d="M8,10 C12,12 24,16 26,24 C20,24 14,20 8,10 Z" fill="${color}" stroke="#000" stroke-width="1.5"/>`;
+  } else if (name.includes("Scale") || name.includes("Chitin") || name.includes('Carapace') || name.includes('Shell')) {
+    color = "#4dabf7";
+    path = `<path d="M16,6 L26,12 L26,20 C26,26 16,30 16,30 C16,30 6,26 6,20 L6,12 Z" fill="${color}" stroke="#000" stroke-width="1.5"/>`;
+  } else if (name.includes("Gem") || name.includes("Pearl") || name.includes("Core")) {
+    color = "#e599f7";
+    path = `<path d="M16,4 L26,14 L16,28 L6,14 Z" fill="${color}" stroke="#000" stroke-width="1.5"/><path d="M16,6 L24,14 L16,24 L8,14 Z" fill="none" stroke="#fff" stroke-width="1.2"/>`;
+  } else if (name.includes("Ink") || name.includes("Slime") || name.includes("Venom")) {
+    color = "#51cf66";
+    path = `<path d="M16,4 C16,4 26,18 24,24 C22,28 10,28 8,24 C6,18 16,4 16,4 Z" fill="${color}" stroke="#000" stroke-width="1.5"/>`;
+  } else if (name.includes("Dust") || name.includes("Sand")) {
+    color = "#ffd43b";
+    path = `<path d="M10,8 L22,8 L18,16 L22,24 L10,24 L14,16 Z" fill="${color}" stroke="#000" stroke-width="1.5"/><circle cx="16" cy="20" r="2" fill="#fff"/>`;
+  } else if (name.includes("Gold") || name.includes("Statue") || name.includes("Mask") || name.includes("Idol")) {
+    color = "#fcc419";
+    path = `<path d="M6,24 L26,24 L28,10 L20,16 L16,8 L12,16 L4,10 Z" fill="${color}" stroke="#000" stroke-width="1.5"/>`;
+  } else if (name.includes("Jar") || name.includes("Amulet") || name.includes("Relic") || name.includes("Bell") || name.includes("Signet")) {
+    color = "#ffa94d";
+    path = `<path d="M10,12 C10,8 22,8 22,12 L20,24 C20,26 12,26 12,24 Z" fill="${color}" stroke="#000" stroke-width="1.5"/><rect x="12" y="10" width="8" height="3" fill="#ff922b" stroke="#000" stroke-width="1"/>`;
+  } else if (name.includes("Bandage") || name.includes("Shroud") || name.includes("Wrap")) {
+    color = "#e9ecef";
+    path = `<path d="M6,10 L26,14 L24,22 L4,18 Z" fill="${color}" stroke="#000" stroke-width="1.5"/><line x1="10" y1="11" x2="8" y2="19" stroke="#adb5bd" stroke-width="1.5"/>`;
+  } else {
+    color = "#dee2e6";
+    path = `<rect x="6" y="8" width="20" height="16" rx="2" fill="${color}" stroke="#000" stroke-width="1.5"/><line x1="6" y1="14" x2="26" y2="14" stroke="#000" stroke-width="1.5"/>`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">${path}</svg>`;
+};
+
+window.getEnemySpriteSrc = function(className) {
+  const paths = {
+    "Furious Chicken": "assets/chicken_sheet.png",
+    "Wild Pig": "assets/pig_sheet.png",
+    "Rambunctious Sheep": "assets/sheep_sheet.png",
+    "Electric Jellyfish": "assets/jellyfish_sheet-removebg-preview.png",
+    "Armored Crab": "assets/crab_sheet-removebg-preview.png",
+    "Bubble Seahorse": "assets/seahorse_sheet.png",
+    "Hunter Shark": "assets/shark_sheet.png",
+    "Poison Scorpion": "assets/scorpion_sheet-removebg-preview.png",
+    "Golden Cobra": "assets/cobra_sheet.png",
+    "Risen Mummy": "assets/Gemini_Generated_Image_qr2tbwqr2tbwqr2t-removebg-preview.png",
+    "Desert Spider": "assets/Gemini_Generated_Image_ezxwglezxwglezxw-removebg-preview.png",
+    "Sand Minion": "assets/Gemini_Generated_Image_qr2tbwqr2tbwqr2t-removebg-preview.png",
+    "Giant Angry Bull": "assets/boss_bull_sheet-removebg-preview.png",
+    "Deepwater Kraken": "assets/boss_kraken_sheet.png",
+    "Pharaoh Mummy": "assets/Gemini_Generated_Image_c8tik3c8tik3c8ti-removebg-preview.png"
+  };
+  return paths[className] || "";
+};
+
+window.drawEnemyCardSprite = function(canvas, className) {
+  const targetSrc = window.getEnemySpriteSrc(className);
+  if (!targetSrc) return;
+  
+  const img = new Image();
+  img.onload = () => {
+    const ctx = canvas.getContext('2d');
+    let sw = 256;
+    let sh = 256;
+    if (img.width > 0 && img.width <= 600) {
+      sw = 125;
+      sh = 125;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const size = Math.min(canvas.width, canvas.height) * 0.95;
+    const dx = (canvas.width - size) / 2;
+    const dy = (canvas.height - size) / 2;
+    
+    ctx.drawImage(img, 0, 0, sw, sh, dx, dy, size, size);
+  };
+  img.src = targetSrc;
+};
+
+// Material descriptions, cooking compatibility, and recipe combinations database
+window.materialDatabase = {
+  // Furious Chicken drops
+  "Furious Chicken Feather": { desc: "A soft, fluffy white feather. Commonly used for arrow fletching or stuffing pillows.", tag: "Sellable" },
+  "Furious Chicken Egg": { desc: "A fresh, nutrient-rich egg. Perfect for baking or breakfast dishes.", tag: "Cooking Material", recipe: "Combines with Pork and Milk for a Hearty Breakfast." },
+  "Furious Chicken Beak": { desc: "A sharp, calcified chicken beak. Sellable to crafters for crafting darts.", tag: "Sellable" },
+  "Furious Chicken Talon": { desc: "A small bird claw. Useful as an ornament or for low-grade alchemy.", tag: "Sellable" },
+  "Furious Chicken Crest": { desc: "A bright red comb crest. Prized by fashionistas for eccentric hat plumes.", tag: "Sellable" },
+  
+  // Wild Pig drops
+  "Wild Pig Pork": { desc: "Tender, juicy pork cutlet. Excellent for roasting or stewing.", tag: "Cooking Material", recipe: "Combines with Beef and Milk for a Savory Meat Loaf." },
+  "Wild Pig Hide": { desc: "Thick, coarse pig skin. Can be tanned into durable leather.", tag: "Sellable" },
+  "Wild Pig Snout": { desc: "A rubbery pig nose. Smells of dirt and roots. Sellable to bizarre collectors.", tag: "Sellable" },
+  "Wild Pig Tusk": { desc: "A curved, sturdy ivory tusk. Used for handles or decorative carvings.", tag: "Sellable" },
+  "Wild Pig Hoof": { desc: "A hard, dirty pig hoof. Rich in gelatin, but mostly sold as junk.", tag: "Sellable" },
+  
+  // Rambunctious Sheep drops
+  "Rambunctious Sheep Wool": { desc: "Soft, curly white wool. Ideal for weaving cozy blankets and socks.", tag: "Sellable" },
+  "Rambunctious Sheep Milk": { desc: "Rich, creamy sheep's milk. Highly nutritious and makes excellent cheese.", tag: "Cooking Material", recipe: "Combines with Egg and Beef for a Fluffy Custard Pie." },
+  "Rambunctious Sheep Horn": { desc: "A spiraled, hollow horn. Can be carved into a war horn or cup.", tag: "Sellable" },
+  "Rambunctious Sheep Fleece": { desc: "A thick pelt of unwashed sheep fleece. Smells strongly of lanolin.", tag: "Sellable" },
+  "Rambunctious Sheep Bell": { desc: "A small brass bell. Tinks softly. Highly sought after by trinket merchants.", tag: "Sellable" },
+  
+  // Electric Jellyfish drops
+  "Electric Jellyfish Tentacle": { desc: "A translucent tentacle that crackles with static energy. Do not touch barehanded!", tag: "Sellable" },
+  "Electric Jellyfish Slime": { desc: "A glowing, viscous slime that retains electrical charge. Useful for batteries.", tag: "Sellable" },
+  "Electric Jellyfish Glow-cap": { desc: "The bioluminescent top dome of a jellyfish. Emits a soft blue glow.", tag: "Sellable" },
+  "Electric Jellyfish Stinger": { desc: "A tiny, venomous barb. Used by assassins or potion makers for paralysis.", tag: "Sellable" },
+  "Electric Jellyfish Core": { desc: "A pulsating orb of pure electricity. Worth a fortune to wizards.", tag: "Sellable" },
+  
+  // Armored Crab drops
+  "Armored Crab Shell": { desc: "A fragment of thick, calcified crab shell. Hard as iron.", tag: "Sellable" },
+  "Armored Crab Meat": { desc: "Sweet, succulent crab leg meat. A highly prized delicacy in coastal cities.", tag: "Cooking Material", recipe: "Combines with Milk and Egg for a Royal Crab Bisque." },
+  "Armored Crab Claw": { desc: "A heavy, jagged crab claw. Can be adapted into a makeshift hammer.", tag: "Sellable" },
+  "Armored Crab Pincer": { desc: "A sharp pincer. Able to snap twigs easily. Sellable to weaponsmiths.", tag: "Sellable" },
+  "Armored Crab Carapace": { desc: "A solid shield-like plate from a giant crab. Protects against blunt impact.", tag: "Sellable" },
+  
+  // Bubble Seahorse drops
+  "Bubble Seahorse Fin": { desc: "A thin, iridescent fin that shimmers in the light.", tag: "Sellable" },
+  "Bubble Seahorse Scale": { desc: "A small scale that magically traps bubbles. Relished by toy makers.", tag: "Sellable" },
+  "Bubble Seahorse Snout": { desc: "A tubular snout that squirts pressurized water. Sellable as a novelty.", tag: "Sellable" },
+  "Bubble Seahorse Coral": { desc: "A branching piece of undersea coral. Beautiful ornament for fish tanks.", tag: "Sellable" },
+  "Bubble Seahorse Crown": { desc: "A crown-like bony crest. Worth a high price to undersea royalty.", tag: "Sellable" },
+  
+  // Hunter Shark drops
+  "Hunter Shark Tooth": { desc: "A razor-sharp, triangular shark tooth. Makes a fierce necklace.", tag: "Sellable" },
+  "Hunter Shark Fin": { desc: "A thick, cartilaginous shark fin. Used in gourmet seafood soups.", tag: "Cooking Material", recipe: "Combines with Crab Meat and Egg for a Premium Shark Fin Soup." },
+  "Hunter Shark Skin": { desc: "Coarse shark skin, rough as sandpaper. Used for polishing wood or grip wraps.", tag: "Sellable" },
+  "Hunter Shark Cartilage": { desc: "Flexible skeletal material. Used in bone-strengthening ointments.", tag: "Sellable" },
+  "Hunter Shark Jaw": { desc: "A large jaw structure displaying rows of serrated teeth. A great trophy.", tag: "Sellable" },
+  
+  // Poison Scorpion drops
+  "Poison Scorpion Chitin": { desc: "Hard, dark purple plates that deflect incoming piercing attacks.", tag: "Sellable" },
+  "Poison Scorpion Venom": { desc: "A vial of concentrated scorpion venom. Highly lethal.", tag: "Sellable" },
+  "Poison Scorpion Stinger": { desc: "A curved, hollow needle loaded with poison. Sellable to alchemists.", tag: "Sellable" },
+  "Poison Scorpion Pincer": { desc: "A powerful crushing claw. Can easily snap bone.", tag: "Sellable" },
+  "Poison Scorpion Carapace": { desc: "A full armored back shell. Highly durable and chemical resistant.", tag: "Sellable" },
+  
+  // Golden Cobra drops
+  "Golden Cobra Scale": { desc: "A shimmering golden scale. Worth a decent sum to armor makers.", tag: "Sellable" },
+  "Golden Cobra Venom": { desc: "Toxic liquid that causes intense fever. Used in counter-venom potions.", tag: "Sellable" },
+  "Golden Cobra Skin": { desc: "Soft, beautiful gold-patterned snake skin. Used for high-end boots.", tag: "Sellable" },
+  "Golden Cobra Fang": { desc: "A hollow, curved fang. Still drips with residual heat venom.", tag: "Sellable" },
+  "Golden Cobra Hood": { desc: "A wide, flared snake hood. Displays a hypnotic eye-like pattern.", tag: "Sellable" },
+  
+  // Risen Mummy drops
+  "Risen Mummy Bandage": { desc: "Dusty, age-old linen wrap. Smells of ancient myrrh and sand.", tag: "Sellable" },
+  "Risen Mummy Dust": { desc: "Cursed gray dust. Used by dark mages to brew decay curses.", tag: "Sellable" },
+  "Risen Mummy Wrap": { desc: "Heavily embalmed cloth wrap. Surprisingly strong and flame retardant.", tag: "Sellable" },
+  "Risen Mummy Amulet": { desc: "A tarnished bronze amulet. Inscribed with protection spells.", tag: "Sellable" },
+  "Risen Mummy Heart": { desc: "A desiccated, magic-infused heart. Beats weakly when near dark magic.", tag: "Sellable" },
+  
+  // Desert Spider drops
+  "Desert Spider Silk": { desc: "Strong, sticky spider silk thread. Can be woven into ultra-light fabrics.", tag: "Sellable" },
+  "Desert Spider Venom": { desc: "Acidic poison that melts prey from the inside. Highly volatile.", tag: "Sellable" },
+  "Desert Spider Spinneret": { desc: "The silk-producing organ of the spider. Still sticky to the touch.", tag: "Sellable" },
+  "Desert Spider Leg": { desc: "A hairy, jointed spider leg. Sharp enough to pierce leather.", tag: "Sellable" },
+  "Desert Spider Mandible": { desc: "Chitinous pincers from the spider's mouth. Used to crunch armor.", tag: "Sellable" },
+  
+  // Sand Minion drops
+  "Sand Minion Sand": { desc: "Glowing sand grains that never stay still. Moves like water.", tag: "Sellable" },
+  "Sand Minion Shard": { desc: "A fragment of compressed sandstone infused with magic.", tag: "Sellable" },
+  "Sand Minion Bandage": { desc: "Rough, coarse cloth wrap caked in sand and grit.", tag: "Sellable" },
+  "Sand Minion Core": { desc: "A small swirling vortex of sand holding the minion together.", tag: "Sellable" },
+  "Sand Minion Mask": { desc: "A tiny clay faceplate with hollow eyes. A common souvenir.", tag: "Sellable" },
+  
+  // Giant Angry Bull drops
+  "Giant Angry Bull Hide": { desc: "Extra-thick bull hide. Used to make heavy boots and shields.", tag: "Sellable" },
+  "Giant Angry Bull Beef": { desc: "Prime cut of marbled beef. High protein and rich flavor.", tag: "Cooking Material", recipe: "Combines with Pork and Egg for a Giant Meatball Feast." },
+  "Giant Angry Bull Horn": { desc: "A massive, pointed horn. Can be polished and sold as a war trophy.", tag: "Sellable" },
+  "Giant Angry Bull Hoof": { desc: "A heavy, split hoof that cracked the ground. Sellable as scrap.", tag: "Sellable" },
+  "Giant Angry Bull Nose Ring": { desc: "A heavy brass ring. Symbol of the bull's containment.", tag: "Sellable" },
+  
+  // Deepwater Kraken drops
+  "Deepwater Kraken Ink": { desc: "Pitch-black, sticky ink. Can be used for writing scrolls or blinding foes.", tag: "Sellable" },
+  "Deepwater Kraken Tentacle": { desc: "A gigantic, muscular tentacle. Can feed an entire village when grilled.", tag: "Cooking Material", recipe: "Combines with Egg and Pork for a Grilled Kraken Platter." },
+  "Deepwater Kraken Suction Cup": { desc: "Rubbery, circular suction cups. A chewy and exotic seafood treat.", tag: "Cooking Material", recipe: "Combines with Crab Meat and Milk for a Creamy Kraken Chowder." },
+  "Deepwater Kraken Eye": { desc: "A massive, glossy eye that can see in pitch darkness.", tag: "Sellable" },
+  "Deepwater Kraken Beak": { desc: "A razor-sharp beak that can crush ship hulls.", tag: "Sellable" },
+  
+  // Pharaoh Mummy drops
+  "Pharaoh Mummy Shroud": { desc: "Gold-threaded linen cloth that wrapped the royal mummy.", tag: "Sellable" },
+  "Pharaoh Mummy Relic": { desc: "An ornate scarab made of solid gold and lapis lazuli. Worth a fortune!", tag: "Sellable" },
+  "Pharaoh Mummy Scarab": { desc: "A jeweled ornament depicting the sacred dung beetle.", tag: "Sellable" },
+  "Pharaoh Mummy Canopic Jar": { desc: "A clay jar adorned with a jackal head. Contains ancient organs.", tag: "Sellable" },
+  "Pharaoh Mummy Crook and Flail": { desc: "The twin symbols of royal authority in ancient Egypt.", tag: "Sellable" }
+};
+
 // Key out background checkerboard colors to create true transparency
 function removeCheckeredBackground(image) {
   const canvas = document.createElement('canvas');
@@ -97,24 +300,38 @@ class Vector2D {
 
 // Particle system for visual feedback
 class Particle {
-  constructor(x, y, vx, vy, color, text = null, size = 4, life = 1.0, isXp = false) {
+  constructor(x, y, vx, vy, color, text = null, size = 4, life = 1.0, isXp = false, isDrop = false, dropName = null) {
     this.x = x;
     this.y = y;
     this.vx = vx;
     this.vy = vy;
     this.color = color;
-    this.text = text; // For damage numbers
+    this.text = text; // For damage numbers or +1 text
     this.size = size;
     this.life = life; // Life from 1.0 down to 0
     this.maxLife = life;
     this.isXp = isXp;
+    this.isDrop = isDrop;
+    this.dropName = dropName;
+    this.dropImg = null;
+    
+    if (this.isDrop && this.dropName) {
+      this.dropImg = new Image();
+      let svgString = "";
+      if (typeof window.getDropSVG === 'function') {
+        svgString = window.getDropSVG(this.dropName);
+      } else {
+        svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><circle cx="16" cy="16" r="10" fill="#fff"/></svg>`;
+      }
+      this.dropImg.src = "data:image/svg+xml;utf8," + encodeURIComponent(svgString);
+    }
   }
   
   update(dt) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
     this.life -= dt;
-    if (this.text) {
+    if (this.text && !this.isDrop) {
       this.vy += 20 * dt; // Gravity effect on damage text
     }
   }
@@ -124,7 +341,22 @@ class Particle {
     ctx.save();
     ctx.globalAlpha = alpha;
     
-    if (this.text) {
+    if (this.isDrop && this.dropImg) {
+      const imgSize = 24;
+      // Draw centered drop image
+      try {
+        ctx.drawImage(this.dropImg, this.x - imgSize / 2, this.y - imgSize / 2 - 12, imgSize, imgSize);
+      } catch(e) {}
+      // Draw "+1" text next to or under it
+      if (this.text) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold 10px 'Outfit', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 4;
+        ctx.fillText(this.text, this.x, this.y + imgSize / 2 + 2);
+      }
+    } else if (this.text) {
       ctx.fillStyle = this.color;
       ctx.font = `bold ${this.size}px 'Outfit', sans-serif`;
       ctx.textAlign = 'center';
@@ -212,6 +444,13 @@ class Player extends Entity {
         hp_potion: 5,
         mp_potion: 5
       },
+      weapon: {
+        equipped: 1
+      },
+      armor: {
+        equipped: 1
+      },
+      material: {},
       etc: {
         vip2coin: 0
       }
@@ -391,6 +630,12 @@ class Player extends Entity {
   gainGold(amount, particles) {
     this.gold += amount;
     particles.push(new Particle(this.x + this.width / 2, this.y, (Math.random() - 0.5) * 40, -90, 'hsl(42, 95%, 55%)', `+🪙${amount}`, 13, 0.8));
+  }
+  
+  gainMaterial(itemName, particles) {
+    if (!this.inventory.material) this.inventory.material = {};
+    this.inventory.material[itemName] = (this.inventory.material[itemName] || 0) + 1;
+    particles.push(new Particle(this.x + this.width / 2, this.y - 10, (Math.random() - 0.5) * 40, -120, 'var(--accent-light)', '+1', 10, 1.4, false, true, itemName));
   }
   
   update(dt, enemies, projectiles, particles) {

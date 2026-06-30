@@ -200,10 +200,11 @@ class GameEngine {
       this.enemiesRequiredToClear = 5 + this.activeLevel; // Scales: 6, 7, 8, 9
     }
     
-    // Align ground level coordinates
+    // Align ground level coordinates and reset background scroll
     this.player.y = groundY - this.player.height;
     this.player.x = 50;
     this.player.target = null;
+    this.bgOffset = 0; // Reset scroll offset to the start of the stage
     
     // Trigger screen text
     const label = this.activeLevel === 5 ? "BOSS WAVE" : `Level ${this.activeStage}-${this.activeLevel}`;

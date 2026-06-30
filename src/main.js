@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
       game.setGroundY(90); // Ground position for taskbar canvas height (120px app height - 30px header)
     } else {
       btnToggleMode.textContent = "Taskbar Mode";
-      game.setGroundY(250); // Restore full ground level height
+      game.setGroundY(380); // Restore full ground level height
     }
     
     // Re-align player ground Y

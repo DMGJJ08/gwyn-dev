@@ -160,7 +160,7 @@
 
     <!-- Gameplay Preview Canvas -->
     <div class="canvas-container">
-      <canvas id="preview-canvas" width="800" height="250"></canvas>
+      <canvas id="preview-canvas" width="960" height="380"></canvas>
     </div>
 
     <!-- Controls dashboard -->
@@ -219,17 +219,29 @@
 
     // Load actual background assets
     const bgImages = {
-      1: new Image(),
       2: new Image(),
       3: new Image()
     };
-    bgImages[1].src = 'assets/farm_background_mid.png';
     bgImages[2].src = 'assets/underwater_background.png';
     bgImages[3].src = 'assets/desert_background.png';
-    const bgLoaded = { 1: false, 2: false, 3: false };
+    const bgLoaded = { 2: false, 3: false };
     for (let key in bgImages) {
       bgImages[key].onload = () => { bgLoaded[key] = true; };
     }
+
+    // Specific Farm Daytime assets
+    const farmSky = new Image();
+    const farmMid = new Image();
+    const farmFore = new Image();
+    farmSky.src = 'assets/farm_sky_day.png';
+    farmMid.src = 'assets/farm_mid_day.png';
+    farmFore.src = 'assets/farm_fore_day.png';
+    let farmSkyLoaded = false;
+    let farmMidLoaded = false;
+    let farmForeLoaded = false;
+    farmSky.onload = () => { farmSkyLoaded = true; };
+    farmMid.onload = () => { farmMidLoaded = true; };
+    farmFore.onload = () => { farmForeLoaded = true; };
 
     // Mirroring drawing helper
     function drawBgTile(img, x, y, w, h, isFlipped) {
@@ -249,7 +261,7 @@
     let scrollSpeed = 150;
     let bgOffset = 0;
     let lastTime = performance.now();
-    const groundY = canvas.height - 30;
+    const groundY = Math.round(canvas.height * 0.68); // 68% height = 258px
 
     // Drifting cloud variables for Farm stage
     const clouds = [
@@ -283,67 +295,55 @@
     function drawFarm(dt) {
       const scrollX = bgOffset;
 
-      // Layer 1: Sky & Sunset Clouds
+      // Layer 1: Sky (Far Background - 20% Speed)
       if (chkLayer1.checked) {
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        skyGrad.addColorStop(0, '#1a0933'); // Dark purple
-        skyGrad.addColorStop(0.5, '#4a123c'); // Burgundy
-        skyGrad.addColorStop(0.8, '#852b1b'); // Burnt orange
-        skyGrad.addColorStop(1, '#c25a1f'); // Warm sunset yellow
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Draw sun setting
-        ctx.fillStyle = '#ff7f36';
-        ctx.shadowBlur = 40;
-        ctx.shadowColor = '#ff5100';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, groundY - 10, 45, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0; // Reset shadow
-
-        // Render cloud layers (15% speed relative movement)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        clouds.forEach(c => {
-          c.x = (c.x - c.speed * dt + (scrollSpeed * 0.15 * dt)) % (canvas.width + 200);
-          if (c.x < -100) c.x += canvas.width + 200;
-          if (c.x > canvas.width + 100) c.x -= canvas.width + 200;
-          ctx.beginPath();
-          ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-          ctx.arc(c.x + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
-          ctx.arc(c.x - c.size * 0.6, c.y - c.size * 0.1, c.size * 0.7, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      }
-
-      // Layer 2: Original Farm Midground Image (45% Speed)
-      if (chkLayer2.checked) {
-        if (bgLoaded[1]) {
-          const img = bgImages[1];
-          const imgScrollX = (scrollX * 0.45) % canvas.width;
+        if (farmSkyLoaded) {
+          const imgScrollX = (scrollX * 0.2) % canvas.width;
           const startTileIndex = Math.floor(imgScrollX / canvas.width);
           
-          const yPos = groundY - canvas.width * 0.508;
+          const x1 = startTileIndex * canvas.width - imgScrollX;
+          const isFlipped1 = (startTileIndex % 2 !== 0);
+          drawBgTile(farmSky, x1, 0, canvas.width, canvas.height, isFlipped1);
+          
+          const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
+          const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+          drawBgTile(farmSky, x2, 0, canvas.width, canvas.height, isFlipped2);
+        } else {
+          // Fallback sunny sky gradient
+          const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
+          skyGrad.addColorStop(0, '#5eaefc'); // Light blue
+          skyGrad.addColorStop(1, '#fffae0'); // Pale yellow
+          ctx.fillStyle = skyGrad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      // Layer 2: Midground Farm Image (50% Speed)
+      if (chkLayer2.checked) {
+        if (farmMidLoaded) {
+          const imgScrollX = (scrollX * 0.5) % canvas.width;
+          const startTileIndex = Math.floor(imgScrollX / canvas.width);
+          const yPos = groundY - canvas.width * 0.55;
           const drawH = canvas.width;
           
           const x1 = startTileIndex * canvas.width - imgScrollX;
           const isFlipped1 = (startTileIndex % 2 !== 0);
-          drawBgTile(img, x1, yPos, canvas.width, drawH, isFlipped1);
+          drawBgTile(farmMid, x1, yPos, canvas.width, drawH, isFlipped1);
           
           const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
           const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
-          drawBgTile(img, x2, yPos, canvas.width, drawH, isFlipped2);
+          drawBgTile(farmMid, x2, yPos, canvas.width, drawH, isFlipped2);
         } else {
-          // Fallback dynamic hills if image is not loaded
-          ctx.fillStyle = '#1c2417';
+          // Fallback hills
+          ctx.fillStyle = '#2d5e30';
           ctx.beginPath();
           ctx.moveTo(0, canvas.height);
-          const midOffset = (scrollX * 0.45) % canvas.width;
+          const midOffset = (scrollX * 0.5) % canvas.width;
           for (let t = 0; t <= 2; t++) {
             const tileStart = t * canvas.width - midOffset;
             for (let x = 0; x <= canvas.width; x += 15) {
               const worldX = tileStart + x;
-              const y = Math.sin(worldX * 0.004) * 22 + Math.cos(worldX * 0.008) * 8 + groundY - 45;
+              const y = Math.sin(worldX * 0.004) * 20 + groundY - 40;
               ctx.lineTo(worldX, y);
             }
           }
@@ -353,34 +353,25 @@
         }
       }
 
-      // Layer 3: Foreground Ground & Fences (100% Speed)
+      // Layer 3: Foreground Path & Fences (100% Speed)
       if (chkLayer3.checked) {
-        // Main golden pathway (from groundY to groundY + 16)
-        ctx.fillStyle = '#dcb93c'; // Warm golden yellow dirt path
-        ctx.fillRect(0, groundY, canvas.width, 16);
-        
-        // Highlights line at the top
-        ctx.fillStyle = '#eed058';
-        ctx.fillRect(0, groundY, canvas.width, 3);
-        
-        // Dark brown soil base at the very bottom (from groundY + 16 to height)
-        ctx.fillStyle = '#3a210f';
-        ctx.fillRect(0, groundY + 16, canvas.width, canvas.height - (groundY + 16));
-        
-        // Wavy organic transition between path and soil base
-        ctx.fillStyle = '#3a210f';
-        ctx.beginPath();
-        ctx.moveTo(0, groundY + 16);
-        const waveOffset = (scrollX) % canvas.width;
-        for (let x = 0; x <= canvas.width; x += 10) {
-          const worldX = waveOffset + x;
-          const y = groundY + 15 + Math.sin(worldX * 0.05) * 1.8;
-          ctx.lineTo(x, y);
+        if (farmForeLoaded) {
+          const imgScrollX = (scrollX * 1.0) % canvas.width;
+          const startTileIndex = Math.floor(imgScrollX / canvas.width);
+          const drawH = canvas.height - groundY;
+          
+          const x1 = startTileIndex * canvas.width - imgScrollX;
+          const isFlipped1 = (startTileIndex % 2 !== 0);
+          drawBgTile(farmFore, x1, groundY, canvas.width, drawH, isFlipped1);
+          
+          const x2 = (startTileIndex + 1) * canvas.width - imgScrollX;
+          const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+          drawBgTile(farmFore, x2, groundY, canvas.width, drawH, isFlipped2);
+        } else {
+          // Fallback golden road
+          ctx.fillStyle = '#dfc73b';
+          ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
         }
-        ctx.lineTo(canvas.width, canvas.height);
-        ctx.lineTo(0, canvas.height);
-        ctx.closePath();
-        ctx.fill();
 
         // Draw fence posts at full speed
         ctx.fillStyle = '#131210';

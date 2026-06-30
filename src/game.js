@@ -146,27 +146,39 @@ class GameEngine {
     
     // Asset loaders
     this.bgImages = {
-      1: new Image(),
       2: new Image(),
       3: new Image()
     };
     
-    this.bgImages[1].src = 'assets/farm_background_mid.png';
     this.bgImages[2].src = 'assets/underwater_background.png';
     this.bgImages[3].src = 'assets/desert_background.png';
     
-    this.bgLoaded = { 1: false, 2: false, 3: false };
+    this.bgLoaded = { 2: false, 3: false };
     
     for (let key in this.bgImages) {
       this.bgImages[key].onload = () => { this.bgLoaded[key] = true; };
     }
+
+    // Specific Farm Daytime assets
+    this.farmSky = new Image();
+    this.farmMid = new Image();
+    this.farmFore = new Image();
+    this.farmSky.src = 'assets/farm_sky_day.png';
+    this.farmMid.src = 'assets/farm_mid_day.png';
+    this.farmFore.src = 'assets/farm_fore_day.png';
+    this.farmSkyLoaded = false;
+    this.farmMidLoaded = false;
+    this.farmForeLoaded = false;
+    this.farmSky.onload = () => { this.farmSkyLoaded = true; };
+    this.farmMid.onload = () => { this.farmMidLoaded = true; };
+    this.farmFore.onload = () => { this.farmForeLoaded = true; };
   }
   
   setGroundY(height) {
     this.height = height;
     this.canvas.height = height;
     const isTaskbar = height < 150;
-    groundY = isTaskbar ? (height - 20) : (height - 30);
+    groundY = isTaskbar ? (height - 20) : Math.round(height * 0.68);
   }
   
   initGame(playerClass, allocatedStats = null) {
@@ -531,40 +543,25 @@ class GameEngine {
     
     // --- LAYER 1: SKY & FAR BACKGROUND (15% Speed) ---
     if (this.activeStage === 1) {
-      // Stage 1 (Farm) always draws the sunset sky gradient and moving clouds in Layer 1
-      const grad = this.ctx.createLinearGradient(0, 0, 0, this.height);
-      grad.addColorStop(0, '#1a0933'); // Dark purple
-      grad.addColorStop(0.5, '#4a123c'); // Burgundy
-      grad.addColorStop(0.8, '#852b1b'); // Burnt orange
-      grad.addColorStop(1, '#c25a1f'); // Warm sunset yellow
-      this.ctx.fillStyle = grad;
-      this.ctx.fillRect(0, 0, this.width, this.height);
-      
-      // Draw setting sun
-      this.ctx.fillStyle = '#ff7f36';
-      this.ctx.beginPath();
-      this.ctx.arc(this.width / 2, groundY - 10, 45, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Render moving clouds (15% speed relative movement)
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      const time = performance.now() * 0.0005;
-      const cloudSeeds = [
-        { seed: 100, y: 50, size: 25, speed: 8 },
-        { seed: 450, y: 35, size: 35, speed: 5 },
-        { seed: 700, y: 60, size: 20, speed: 12 }
-      ];
-      cloudSeeds.forEach(c => {
-        let cloudX = (c.seed - (time * c.speed * 40) + (scrollX * 0.15)) % (this.width + 200);
-        if (cloudX < -100) cloudX += this.width + 200;
-        if (cloudX > this.width + 100) cloudX -= this.width + 200;
-        const drawX = cloudX;
-        this.ctx.beginPath();
-        this.ctx.arc(drawX, c.y, c.size, 0, Math.PI * 2);
-        this.ctx.arc(drawX + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
-        this.ctx.arc(drawX - c.size * 0.6, c.y - c.size * 0.1, c.size * 0.7, 0, Math.PI * 2);
-        this.ctx.fill();
-      });
+      if (this.farmSkyLoaded) {
+        const imgScrollX = (scrollX * 0.2) % this.width;
+        const startTileIndex = Math.floor(imgScrollX / this.width);
+        
+        const x1 = startTileIndex * this.width - imgScrollX;
+        const isFlipped1 = (startTileIndex % 2 !== 0);
+        this.drawBgTile(this.farmSky, x1, 0, this.width, this.height, isFlipped1);
+        
+        const x2 = (startTileIndex + 1) * this.width - imgScrollX;
+        const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+        this.drawBgTile(this.farmSky, x2, 0, this.width, this.height, isFlipped2);
+      } else {
+        // Fallback sunny daytime gradient
+        const grad = this.ctx.createLinearGradient(0, 0, 0, this.height * 0.6);
+        grad.addColorStop(0, '#5eaefc'); // Light blue
+        grad.addColorStop(1, '#fffae0'); // Pale yellow
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+      }
     } else {
       // Stage 2 and 3 draw images as Layer 1
       if (this.bgLoaded[this.activeStage]) {
@@ -639,12 +636,12 @@ class GameEngine {
     const midOffset = (scrollX * 0.45) % this.width;
     
     if (this.activeStage === 1) { // Farm Midground Image (or fallback hills)
-      if (this.bgLoaded[1]) {
-        const img = this.bgImages[1];
-        const imgScrollX = (scrollX * 0.45) % this.width;
+      if (this.farmMidLoaded) {
+        const img = this.farmMid;
+        const imgScrollX = (scrollX * 0.5) % this.width;
         const startTileIndex = Math.floor(imgScrollX / this.width);
         
-        const yPos = groundY - this.width * 0.508;
+        const yPos = groundY - this.width * 0.55;
         const drawH = this.width;
         
         const x1 = startTileIndex * this.width - imgScrollX;
@@ -705,49 +702,64 @@ class GameEngine {
     
     // --- LAYER 3: FOREGROUND PLATFORM & DETAILS (100% Speed) ---
     if (this.activeStage === 1) { // Farm grass/soil
-      // Main golden pathway (from groundY to groundY + 16)
-      this.ctx.fillStyle = '#dcb93c'; // Warm golden yellow dirt path
-      this.ctx.fillRect(0, groundY, this.width, 16);
-      
-      // Highlights line at the top
-      this.ctx.fillStyle = '#eed058';
-      this.ctx.fillRect(0, groundY, this.width, 3);
-      
-      // Dark brown soil base at the very bottom (from groundY + 16 to height)
-      this.ctx.fillStyle = '#3a210f';
-      this.ctx.fillRect(0, groundY + 16, this.width, this.height - (groundY + 16));
-      
-      // Wavy organic transition between path and soil base
-      this.ctx.fillStyle = '#3a210f';
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, groundY + 16);
-      const waveOffset = (scrollX) % this.width;
-      for (let x = 0; x <= this.width; x += 10) {
-        const worldX = waveOffset + x;
-        const y = groundY + 15 + Math.sin(worldX * 0.05) * 1.8;
-        this.ctx.lineTo(x, y);
-      }
-      this.ctx.lineTo(this.width, this.height);
-      this.ctx.lineTo(0, this.height);
-      this.ctx.closePath();
-      this.ctx.fill();
-      
-      // Farm fences
-      this.ctx.fillStyle = '#131210';
-      this.ctx.strokeStyle = '#1d1b17';
-      this.ctx.lineWidth = 3;
-      const postSpacing = 160;
-      const foreOffset = scrollX % postSpacing;
-      for (let x = -postSpacing; x < this.width + postSpacing; x += postSpacing) {
-        const postX = x - foreOffset + 50;
-        this.ctx.fillRect(postX, groundY - 24, 6, 24);
+      if (this.farmForeLoaded) {
+        const img = this.farmFore;
+        const imgScrollX = (scrollX * 1.0) % this.width;
+        const startTileIndex = Math.floor(imgScrollX / this.width);
+        const drawH = this.height - groundY;
         
+        const x1 = startTileIndex * this.width - imgScrollX;
+        const isFlipped1 = (startTileIndex % 2 !== 0);
+        this.drawBgTile(img, x1, groundY, this.width, drawH, isFlipped1);
+        
+        const x2 = (startTileIndex + 1) * this.width - imgScrollX;
+        const isFlipped2 = ((startTileIndex + 1) % 2 !== 0);
+        this.drawBgTile(img, x2, groundY, this.width, drawH, isFlipped2);
+      } else {
+        // Fallback golden pathway (from groundY to groundY + 16)
+        this.ctx.fillStyle = '#dcb93c'; // Warm golden yellow dirt path
+        this.ctx.fillRect(0, groundY, this.width, 16);
+        
+        // Highlights line at the top
+        this.ctx.fillStyle = '#eed058';
+        this.ctx.fillRect(0, groundY, this.width, 3);
+        
+        // Dark brown soil base at the very bottom (from groundY + 16 to height)
+        this.ctx.fillStyle = '#3a210f';
+        this.ctx.fillRect(0, groundY + 16, this.width, this.height - (groundY + 16));
+        
+        // Wavy organic transition between path and soil base
+        this.ctx.fillStyle = '#3a210f';
         this.ctx.beginPath();
-        this.ctx.moveTo(postX - 5, groundY - 16);
-        this.ctx.lineTo(postX + postSpacing + 5, groundY - 16);
-        this.ctx.moveTo(postX - 5, groundY - 8);
-        this.ctx.lineTo(postX + postSpacing + 5, groundY - 8);
-        this.ctx.stroke();
+        this.ctx.moveTo(0, groundY + 16);
+        const waveOffset = (scrollX) % this.width;
+        for (let x = 0; x <= this.width; x += 10) {
+          const worldX = waveOffset + x;
+          const y = groundY + 15 + Math.sin(worldX * 0.05) * 1.8;
+          this.ctx.lineTo(x, y);
+        }
+        this.ctx.lineTo(this.width, this.height);
+        this.ctx.lineTo(0, this.height);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // Farm fences
+        this.ctx.fillStyle = '#131210';
+        this.ctx.strokeStyle = '#1d1b17';
+        this.ctx.lineWidth = 3;
+        const postSpacing = 160;
+        const foreOffset = scrollX % postSpacing;
+        for (let x = -postSpacing; x < this.width + postSpacing; x += postSpacing) {
+          const postX = x - foreOffset + 50;
+          this.ctx.fillRect(postX, groundY - 24, 6, 24);
+          
+          this.ctx.beginPath();
+          this.ctx.moveTo(postX - 5, groundY - 16);
+          this.ctx.lineTo(postX + postSpacing + 5, groundY - 16);
+          this.ctx.moveTo(postX - 5, groundY - 8);
+          this.ctx.lineTo(postX + postSpacing + 5, groundY - 8);
+          this.ctx.stroke();
+        }
       }
     } else if (this.activeStage === 2) { // Deep Sea sand/seaweed
       this.ctx.fillStyle = '#02070f';
